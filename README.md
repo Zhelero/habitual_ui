@@ -1,16 +1,99 @@
-# React + Vite
+# Habitual UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> React frontend for [Habitual API](https://github.com/Zhelero/habitual_api) — a habit tracking app with streak statistics and 30-day heatmap.
 
-Currently, two official plugins are available:
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Screenshots
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+![Login](./src/assets/screenshot-login.png)
+![Dashboard](./src/assets/screenshot-dashboard.png)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Features
+
+- Login and registration with JWT authentication
+- Auto-refresh of access token via refresh token rotation
+- Dashboard with total habits, completed today, and best streak
+- Full habit CRUD — create, edit, delete
+- Mark habits as done / undo
+- Current streak per habit
+- 30-day heatmap per habit
+- User data isolation — each user sees only their own habits
+
+---
+
+## Tech Stack
+
+| Layer      | Technology          |
+|------------|---------------------|
+| Framework  | React 18            |
+| Build tool | Vite                |
+| Styling    | Tailwind CSS        |
+| Auth       | JWT (access + refresh tokens) |
+| API client | fetch (native)      |
+| State      | React Context + hooks |
+
+---
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── LoginForm.jsx       # login / register form
+│   └── RegisterForm.jsx
+├── context/
+│   └── AuthContext.jsx     # JWT storage and refresh logic
+├── hooks/
+│   └── useHabits.js        # data fetching and state
+├── HabitualDashboard.jsx   # main dashboard view
+├── api.js                  # API client with auth headers
+└── App.jsx                 # routing between auth and dashboard
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- [Habitual API](https://github.com/Zhelero/habitual_api) running on `http://localhost:8000`
+
+### Install and run
+
+```bash
+git clone https://github.com/Zhelero/habitual-ui
+cd habitual-ui
+
+npm install
+npm run dev
+```
+
+UI will be available at `http://localhost:5173`
+
+---
+
+## Running the full stack
+
+```bash
+# Terminal 1 — API
+cd habitual_api
+uvicorn app.main:app --reload
+
+# Terminal 2 — UI
+cd habitual-ui
+npm run dev
+```
+
+---
+
+## Related
+
+- [habitual_api](https://github.com/Zhelero/habitual_api) — FastAPI backend with PostgreSQL, JWT auth, and 98% test coverage

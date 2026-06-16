@@ -57,7 +57,6 @@ export function useHabits() {
 
     const fetchAll = useCallback(async () => {
         try {
-            setLoading(true);
             setError(null);
 
             const [habitsData, dashboardData, userData] = await Promise.all([

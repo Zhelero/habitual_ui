@@ -297,6 +297,7 @@ export default function HabitualDashboard() {
                             }
                         </h2>
                         <input
+                            autoFocus
                             type="text"
                             placeholder="Habit name"
                             value={newHabitName}
