@@ -1,9 +1,11 @@
 export const API_BASE = "http://localhost:8000";
 
-export async function api(path, options = {}) {
-    const token = localStorage.getItem("token");
+let isRefreshing = false;
 
-    const response = await fetch(`${API_BASE}${path}`, {
+export async function api(path, options = {}) {
+    let token = localStorage.getItem("token");
+
+    let response = await fetch(`${API_BASE}${path}`, {
         ...options,
         headers: {
             "Content-Type": "application/json",
@@ -14,17 +16,76 @@ export async function api(path, options = {}) {
         },
     });
 
-    if (response.status === 401) {
-        localStorage.removeItem("token");
+    if (response.status === 401 && !isRefreshing) {
+        isRefreshing = true;
 
-        window.location.reload();
+        try {
+            const refreshToken =
+                localStorage.getItem("refreshToken");
 
-        throw new Error("Session expired");
+            const refreshResponse = await fetch(
+                `${API_BASE}/auth/refresh/`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        refresh_token: refreshToken,
+                    }),
+                }
+            );
+
+            if (!refreshResponse.ok) {
+                throw new Error("Refresh failed");
+            }
+
+            const refreshData =
+                await refreshResponse.json();
+
+            localStorage.setItem(
+                "token",
+                refreshData.access_token
+            );
+
+            localStorage.setItem(
+                "refreshToken",
+                refreshData.refresh_token
+            );
+
+            token = refreshData.access_token;
+
+            response = await fetch(
+                `${API_BASE}${path}`,
+                {
+                    ...options,
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        Authorization: `Bearer ${token}`,
+                        ...options.headers,
+                    },
+                }
+            );
+        } catch {
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+
+            window.location.reload();
+
+            throw new Error("Session expired");
+        } finally {
+            isRefreshing = false;
+        }
     }
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.detail || `HTTP ${response.status}`);
+        const error =
+            await response.json().catch(() => ({}));
+
+        throw new Error(
+            error.detail || `HTTP ${response.status}`
+        );
     }
 
     if (response.status === 204) {

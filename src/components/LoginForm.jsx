@@ -40,7 +40,10 @@ export default function LoginForm() {
                 return;
             }
 
-            login(data.access_token);
+            login(
+                data.access_token,
+                data.refresh_token
+            );
         } catch (err) {
             setPassword("");
             setErrors([err.message]);

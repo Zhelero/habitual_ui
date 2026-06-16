@@ -7,13 +7,16 @@ export function AuthProvider({ children }) {
         localStorage.getItem("token")
     );
 
-    const login = (token) => {
-        localStorage.setItem("token", token);
-        setToken(token);
+    const login = (accessToken, refreshToken) => {
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+
+        setToken(accessToken);
     };
 
     const logout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
         setToken(null);
     };
 
