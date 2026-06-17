@@ -14,6 +14,7 @@ export default function HabitualDashboard() {
     const [actionLoading, setActionLoading] = useState({});
     const [actionError, setActionError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+    const [sortBy, setSortBy] = useState("pending");
 
     const {
         habits,
@@ -120,6 +121,44 @@ export default function HabitualDashboard() {
             (d) => d.date === today && d.done
         );
     };
+
+    const sortedHabits = [...habits].sort((a, b) => {
+        switch (sortBy) {
+            case "pending": {
+                const aDone = isDoneToday(a.id);
+                const bDone = isDoneToday(b.id);
+
+                if (aDone === bDone) return 0;
+
+                return aDone ? 1 : -1;
+            }
+
+            case "completed": {
+                const aDone = isDoneToday(a.id);
+                const bDone = isDoneToday(b.id);
+
+                if (aDone === bDone) return 0;
+
+                return aDone ? -1 : 1;
+            }
+
+            case "streak": {
+                const aStreak =
+                    habitStats[a.id]?.current_streak ?? 0;
+
+                const bStreak =
+                    habitStats[b.id]?.current_streak ?? 0;
+
+                return bStreak - aStreak;
+            }
+
+            case "alphabet":
+                return a.name.localeCompare(b.name);
+
+            default:
+                return 0;
+        }
+    });
 
     const renderHeatmap = (habitId) => {
         const data = heatmaps[habitId];
@@ -287,6 +326,50 @@ export default function HabitualDashboard() {
                     </div>
                 )}
 
+                {/* Sorting */}
+                <div className="mb-6 flex items-center justify-end gap-2">
+                    <label
+                        htmlFor="sort"
+                        className="text-sm text-slate-500"
+                    >
+                        Sort:
+                    </label>
+
+                    <select
+                        id="sort"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-3
+                            py-2
+                            text-sm
+                            text-slate-700
+                            outline-none
+                            focus:border-slate-400
+                        "
+                    >
+                        <option value="pending">
+                            Pending first
+                        </option>
+
+                        <option value="completed">
+                            Completed first
+                        </option>
+
+                        <option value="streak">
+                            By streak
+                        </option>
+
+                        <option value="alphabet">
+                            Alphabetical
+                        </option>
+                    </select>
+                </div>
+
                 {/* Add habit form */}
                 {addingHabit && (
                     <div className="mb-6 rounded-3xl bg-white p-5 shadow-sm">
@@ -350,7 +433,7 @@ export default function HabitualDashboard() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {habits.map((habit) => {
+                        {sortedHabits.map((habit) => {
                             const stats = habitStats[habit.id];
                             const done = isDoneToday(habit.id);
                             const isLoading = actionLoading[habit.id];
