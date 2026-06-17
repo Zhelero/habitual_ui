@@ -15,6 +15,9 @@ export default function HabitualDashboard() {
     const [actionError, setActionError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [sortBy, setSortBy] = useState("pending");
+    const [darkMode, setDarkMode] = useState(
+        localStorage.getItem("theme") === "dark"
+    );
 
     const {
         habits,
@@ -29,6 +32,19 @@ export default function HabitualDashboard() {
 
         fetchAll,
     } = useHabits();
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+
+        localStorage.setItem(
+            "theme",
+            darkMode ? "dark" : "light"
+        );
+    }, [darkMode]);
 
     const handleMarkDone = async (habit) => {
         setActionError("");
@@ -167,7 +183,7 @@ export default function HabitualDashboard() {
 
         return (
             <div className="mt-3">
-                <p className="mb-2 text-xs text-slate-400">
+                <p className="mb-2 text-xs text-slate-400 dark:text-slate-500">
                     Last 30 days
                  </p>
 
@@ -208,7 +224,18 @@ export default function HabitualDashboard() {
 
     if (loading) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+            <div
+                className="
+                    flex
+                    min-h-screen
+                    items-center
+                    justify-center
+                    bg-slate-50
+
+                    dark:bg-slate-900
+                    dark:text-slate-100
+                "
+            >
                 <p className="text-slate-500">Loading...</p>
             </div>
         );
@@ -216,8 +243,8 @@ export default function HabitualDashboard() {
 
     if (error) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50">
-                <div className="rounded-2xl bg-white p-8 shadow-sm text-center">
+            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
+                <div className="rounded-2xl bg-white p-8 shadow-sm text-center dark:bg-slate-800">
                     <p className="text-red-500 font-medium">Error: {error}</p>
                     <p className="mt-2 text-sm text-slate-500">
                         Make sure your API is running and TOKEN is set correctly.
@@ -234,20 +261,28 @@ export default function HabitualDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 p-8">
+        <div
+            className="
+                min-h-screen
+                bg-slate-50
+                p-8
+                dark:bg-slate-900
+                dark:text-slate-100
+            "
+        >
             <div className="mx-auto max-w-3xl">
                 {/* Header */}
                 <header className="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-semibold text-slate-900">
+                        <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-400">
                             Habitual
                         </h1>
 
-                        <p className="mt-1 text-slate-500">
+                        <p className="mt-1 text-slate-500 dark:text-slate-400">
                             Track habits. Keep your streak going.
                         </p>
 
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-slate-400 dark:text-slate-500">
                             Signed in as <span className="font-medium">{user?.email}</span>
                         </p>
                     </div>
@@ -260,23 +295,74 @@ export default function HabitualDashboard() {
                                 setNewHabitDesc("");
                                 setAddingHabit(true);
                             }}
-                            className="rounded-2xl bg-slate-900 px-4 py-2 text-sm text-white shadow-sm hover:bg-slate-800"
+                            className="
+                            rounded-2xl
+                            bg-slate-900
+                            px-4
+                            py-2
+                            text-sm
+                            text-white
+                            shadow-sm
+                            hover:bg-slate-800
+
+                            dark:bg-slate-800
+                            dark:text-slate-200"
                         >
                             + Add habit
                         </button>
 
                         <button
                             onClick={handleLogout}
-                            className="rounded-2xl bg-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-300"
+                            className="
+                                rounded-2xl
+                                bg-slate-200
+                                px-4
+                                py-2
+                                text-sm
+                                text-slate-700
+                                hover:bg-slate-300
+
+                                dark:text-slate-200
+                                dark:bg-slate-600
+                            "
                         >
                             Logout
+                        </button>
+                    </div>
+
+                    <div className="flex">
+                        <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className="
+                                rounded-2xl
+                                bg-slate-200
+                                px-4 py-2
+                                text-sm
+                                text-slate-700
+                                hover:bg-slate-300
+                                dark:bg-slate-700
+                                dark:text-slate-200
+                                dark:hover:bg-slate-600
+                            "
+                        >
+                            {darkMode ? "☀️" : "🌙"}
                         </button>
                     </div>
                 </header>
 
                 {/* Error */}
                 {actionError && (
-                    <div className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3">
+                    <div className="
+                        mb-6
+                        rounded-xl
+                        border
+                        border-red-300
+                        bg-red-50
+                        px-4
+                        py-3
+                        dark:bg-red-950
+                        dark:border-red-800
+                    ">
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-red-600">{actionError}</p>
 
@@ -292,7 +378,17 @@ export default function HabitualDashboard() {
 
                 {/* Success message */}
                 {successMessage && (
-                    <div className="mb-6 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3">
+                    <div className="
+                        mb-6
+                        rounded-xl
+                        border
+                        border-emerald-300
+                        bg-emerald-50
+                        px-4
+                        py-3
+                        dark:bg-emerald-950
+                        dark:border-emerald-800
+                    ">
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-emerald-700">
                                 {successMessage}
@@ -311,16 +407,16 @@ export default function HabitualDashboard() {
                 {/* Dashboard stats */}
                 {dashboard && (
                     <div className="mb-6 grid grid-cols-3 gap-4">
-                        <div className="rounded-3xl bg-white p-5 shadow-sm">
-                            <p className="text-sm text-slate-500">Total habits</p>
+                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Total habits</p>
                             <p className="mt-2 text-2xl font-semibold">{dashboard.total_habits}</p>
                         </div>
-                        <div className="rounded-3xl bg-white p-5 shadow-sm">
-                            <p className="text-sm text-slate-500">Completed today</p>
+                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Completed today</p>
                             <p className="mt-2 text-2xl font-semibold">{dashboard.completed_today}</p>
                         </div>
-                        <div className="rounded-3xl bg-white p-5 shadow-sm">
-                            <p className="text-sm text-slate-500">Best streak</p>
+                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Best streak</p>
                             <p className="mt-2 text-2xl font-semibold">{dashboard.best_streak} 🔥</p>
                         </div>
                     </div>
@@ -350,6 +446,9 @@ export default function HabitualDashboard() {
                             text-slate-700
                             outline-none
                             focus:border-slate-400
+
+                            dark:bg-slate-800
+                            dark:text-slate-200
                         "
                     >
                         <option value="pending">
@@ -372,8 +471,8 @@ export default function HabitualDashboard() {
 
                 {/* Add habit form */}
                 {addingHabit && (
-                    <div className="mb-6 rounded-3xl bg-white p-5 shadow-sm">
-                        <h2 className="mb-4 text-base font-medium text-slate-900">
+                    <div className="mb-6 rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
+                        <h2 className="mb-4 text-base font-medium text-slate-900 dark:text-slate-100">
                             {editingHabit
                                 ? `Editing "${editingHabit.name}"`
                                 : "New habit"
@@ -386,7 +485,19 @@ export default function HabitualDashboard() {
                             value={newHabitName}
                             onChange={(e) => setNewHabitName(e.target.value)}
                             className="
-                                mb-3 w-full rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-slate-400
+                                mb-3 w-full
+                                rounded-xl
+                                border
+                                border-slate-200
+                                px-4
+                                py-2
+                                text-sm
+                                outline-none
+                                focus:border-slate-400
+
+                                dark:border-slate-700
+                                dark:bg-slate-900
+                                dark:text-slate-100
                             "
                             maxLength={100}
                         />
@@ -395,7 +506,21 @@ export default function HabitualDashboard() {
                             placeholder="Description (optional)"
                             value={newHabitDesc}
                             onChange={(e) => setNewHabitDesc(e.target.value)}
-                            className="mb-4 w-full rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-slate-400"
+                            className="
+                                mb-4 w-full
+                                rounded-xl
+                                border
+                                border-slate-200
+                                px-4
+                                py-2
+                                text-sm
+                                outline-none
+                                focus:border-slate-400
+
+                                dark:border-slate-700
+                                dark:bg-slate-900
+                                dark:text-slate-100
+                            "
                             maxLength={255}
                         />
                         <div className="flex gap-3">
@@ -418,7 +543,19 @@ export default function HabitualDashboard() {
                                     setNewHabitDesc("");
                                     setEditingHabit(null)
                                 }}
-                                className="rounded-xl bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-200"
+                                className="
+                                    rounded-xl
+                                    bg-slate-100
+                                    px-4
+                                    py-2
+                                    text-sm
+                                    text-slate-700
+                                    hover:bg-slate-200
+
+                                    dark:bg-slate-700
+                                        dark:text-slate-200
+                                        dark:hover:bg-slate-600
+                                "
                             >
                                 Cancel
                             </button>
@@ -428,7 +565,7 @@ export default function HabitualDashboard() {
 
                 {/* Habits list */}
                 {habits.length === 0 ? (
-                    <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
+                    <div className="rounded-3xl bg-white p-10 text-center shadow-sm dark:bg-slate-800">
                         <p className="text-slate-500">No habits yet. Add your first one.</p>
                     </div>
                 ) : (
@@ -441,10 +578,18 @@ export default function HabitualDashboard() {
                             return (
                                 <div
                                     key={habit.id}
-                                        className="flex items-center justify-between rounded-3xl bg-white p-5 shadow-sm"
+                                        className="
+                                        flex items-center justify-between
+                                        rounded-3xl
+                                        bg-white
+                                        p-5
+                                        shadow-sm
+
+                                        dark:bg-slate-800
+                                        "
                                 >
                                     <div>
-                                        <h2 className="text-base font-medium text-slate-900">{habit.name}</h2>
+                                        <h2 className="text-base font-medium text-slate-900 dark:text-slate-100">{habit.name}</h2>
                                         {habit.description && (
                                             <p className="mt-0.5 text-sm text-slate-400">{habit.description}</p>
                                         )}
@@ -463,7 +608,7 @@ export default function HabitualDashboard() {
                                             className={`rounded-2xl px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
                                                 done
                                                     ? "bg-emerald-100 text-emerald-700"
-                                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
                                             }`}
                                         >
                                             {isLoading ? "..." : done ? "Done ✓" : "Mark done"}

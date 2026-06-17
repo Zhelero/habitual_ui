@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import {API_BASE} from "../api"
 
 
@@ -9,6 +9,22 @@ export default function RegisterForm() {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
     const [success, setSuccess] = useState("");
+    const [darkMode, setDarkMode] = useState(
+        localStorage.getItem("theme") === "dark"
+    );
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+
+        localStorage.setItem(
+            "theme",
+            darkMode ? "dark" : "light"
+        );
+    }, [darkMode]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -60,6 +76,27 @@ export default function RegisterForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="
+                        rounded-2xl
+                        bg-slate-200
+                        px-4 py-2
+                        text-sm
+                        text-slate-700
+                        hover:bg-slate-300
+
+                        dark:bg-slate-700
+                        dark:text-slate-200
+                        dark:hover:bg-slate-600
+                    "
+                >
+                    {darkMode ? "☀️" : "🌙"}
+                </button>
+            </div>
+
             <input
                 autoFocus
                 type="email"
@@ -70,10 +107,14 @@ export default function RegisterForm() {
                     setErrors([]);
                     setSuccess("");
                 }}
-                className={`w-full rounded-xl border px-4 py-2 outline-none ${
-                    errors.length > 0
-                        ? "border-red-300"
-                        : "border-slate-200 focus:border-slate-400"
+                className={`w-full rounded-xl border px-4 py-2 outline-none 
+                    dark:bg-slate-800
+                    dark:text-slate-100
+                    dark:border-slate-700
+                    ${
+                        errors.length > 0
+                            ? "border-red-300"
+                            : "border-slate-200 focus:border-slate-400"
                 }`}
             />
 
@@ -86,7 +127,11 @@ export default function RegisterForm() {
                     setErrors([]);
                     setSuccess("");
                 }}
-                className={`w-full rounded-xl border px-4 py-2 outline-none ${
+                className={`w-full rounded-xl border px-4 py-2 outline-none 
+                    dark:bg-slate-800
+                    dark:text-slate-100
+                    dark:border-slate-700
+                    ${
                     errors.length > 0
                         ? "border-red-300"
                         : "border-slate-200 focus:border-slate-400"
@@ -94,7 +139,10 @@ export default function RegisterForm() {
             />
 
             {errors.length > 0 && (
-                <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3">
+                <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3
+                    dark:bg-red-950
+                    dark:border-red-800
+                ">
                     <ul className="list-disc pl-5 text-sm text-red-600 space-y-1">
                         {errors.map((err, index) => (
                             <li key={index}>{err}</li>
@@ -116,7 +164,18 @@ export default function RegisterForm() {
                     !email.trim() ||
                     !password.trim()
                 }
-                className="w-full rounded-xl bg-slate-900 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="
+                    w-full rounded-xl
+                    bg-slate-900
+                    py-2
+                    text-white
+                    hover:bg-slate-800
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
+
+                    dark:bg-slate-700
+                    dark:hover:bg-slate-600
+                "
             >
                 {loading ? "Creating account..." : "Register"}
             </button>
