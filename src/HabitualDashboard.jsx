@@ -402,10 +402,10 @@ export default function HabitualDashboard() {
                 {addingHabit && (
                     <HabitForm
                         editingHabit={editingHabit}
-                        name={newHabitName}
-                        description={newHabitDesc}
-                        onNameChange={setNewHabitName}
-                        onDescriptionChange={setNewHabitDesc}
+                        newHabitName={newHabitName}
+                        setNewHabitName={setNewHabitName}
+                        newHabitDesc={newHabitDesc}
+                        setNewHabitDesc={setNewHabitDesc}
                         onSubmit={handleAddHabit}
                         onCancel={() => {
                             setAddingHabit(false);
