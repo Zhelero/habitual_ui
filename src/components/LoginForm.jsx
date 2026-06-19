@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import {API_BASE} from "../api"
+import ThemeToggle from "./ThemeToggle.jsx";
 
 
 export default function LoginForm() {
@@ -72,24 +73,10 @@ export default function LoginForm() {
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex justify-end">
-                <button
-                    type="button"
-                    onClick={() => setDarkMode(!darkMode)}
-                    className="
-                        rounded-2xl
-                        bg-slate-200
-                        px-4 py-2
-                        text-sm
-                        text-slate-700
-                        hover:bg-slate-300
-
-                        dark:bg-slate-700
-                        dark:text-slate-200
-                        dark:hover:bg-slate-600
-                    "
-                >
-                    {darkMode ? "☀️" : "🌙"}
-                </button>
+                <ThemeToggle
+                    darkMode={darkMode}
+                    setDarkMode={setDarkMode}
+                />
             </div>
 
             <input

@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { api } from "./api";
 import { useAuth } from "./context/AuthContext";
 import { useHabits } from "./hooks/useHabits";
+import { sortHabits } from "./utils/sortHabits.js";
+import HabitCard from "./components/HabitCard.jsx";
+import HabitForm from "./components/HabitForm.jsx";
+import ThemeToggle from "./components/ThemeToggle.jsx";
 
 export default function HabitualDashboard() {
     const { logout } = useAuth();
@@ -138,75 +142,12 @@ export default function HabitualDashboard() {
         );
     };
 
-    const sortedHabits = [...habits].sort((a, b) => {
-        switch (sortBy) {
-            case "pending": {
-                const aDone = isDoneToday(a.id);
-                const bDone = isDoneToday(b.id);
-
-                if (aDone === bDone) return 0;
-
-                return aDone ? 1 : -1;
-            }
-
-            case "completed": {
-                const aDone = isDoneToday(a.id);
-                const bDone = isDoneToday(b.id);
-
-                if (aDone === bDone) return 0;
-
-                return aDone ? -1 : 1;
-            }
-
-            case "streak": {
-                const aStreak =
-                    habitStats[a.id]?.current_streak ?? 0;
-
-                const bStreak =
-                    habitStats[b.id]?.current_streak ?? 0;
-
-                return bStreak - aStreak;
-            }
-
-            case "alphabet":
-                return a.name.localeCompare(b.name);
-
-            default:
-                return 0;
-        }
-    });
-
-    const renderHeatmap = (habitId) => {
-        const data = heatmaps[habitId];
-
-        if (!data) return null;
-
-        return (
-            <div className="mt-3">
-                <p className="mb-2 text-xs text-slate-400 dark:text-slate-500">
-                    Last 30 days
-                 </p>
-
-                <div className="grid grid-cols-10 gap-1 w-fit">
-                    {data.map((day) => (
-                        <div
-                            key={day.date}
-                            title={day.date}
-                            className={`rounded-sm ${
-                            day.done
-                                ? "bg-emerald-500"
-                                : "bg-slate-200"
-                            }`}
-                            style={{
-                                width: 12,
-                                height: 12,
-                            }}
-                        />
-                    ))}
-                </div>
-            </div>
-        );
-    };
+    const sortedHabits = sortHabits(
+        habits,
+        habitStats,
+        sortBy,
+        isDoneToday
+    );
 
     const handleLogout = async () => {
         setActionError("");
@@ -331,22 +272,10 @@ export default function HabitualDashboard() {
                     </div>
 
                     <div className="flex">
-                        <button
-                            onClick={() => setDarkMode(!darkMode)}
-                            className="
-                                rounded-2xl
-                                bg-slate-200
-                                px-4 py-2
-                                text-sm
-                                text-slate-700
-                                hover:bg-slate-300
-                                dark:bg-slate-700
-                                dark:text-slate-200
-                                dark:hover:bg-slate-600
-                            "
-                        >
-                            {darkMode ? "☀️" : "🌙"}
-                        </button>
+                        <ThemeToggle
+                            darkMode={darkMode}
+                            setDarkMode={setDarkMode}
+                        />
                     </div>
                 </header>
 
@@ -471,96 +400,21 @@ export default function HabitualDashboard() {
 
                 {/* Add habit form */}
                 {addingHabit && (
-                    <div className="mb-6 rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
-                        <h2 className="mb-4 text-base font-medium text-slate-900 dark:text-slate-100">
-                            {editingHabit
-                                ? `Editing "${editingHabit.name}"`
-                                : "New habit"
-                            }
-                        </h2>
-                        <input
-                            autoFocus
-                            type="text"
-                            placeholder="Habit name"
-                            value={newHabitName}
-                            onChange={(e) => setNewHabitName(e.target.value)}
-                            className="
-                                mb-3 w-full
-                                rounded-xl
-                                border
-                                border-slate-200
-                                px-4
-                                py-2
-                                text-sm
-                                outline-none
-                                focus:border-slate-400
-
-                                dark:border-slate-700
-                                dark:bg-slate-900
-                                dark:text-slate-100
-                            "
-                            maxLength={100}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Description (optional)"
-                            value={newHabitDesc}
-                            onChange={(e) => setNewHabitDesc(e.target.value)}
-                            className="
-                                mb-4 w-full
-                                rounded-xl
-                                border
-                                border-slate-200
-                                px-4
-                                py-2
-                                text-sm
-                                outline-none
-                                focus:border-slate-400
-
-                                dark:border-slate-700
-                                dark:bg-slate-900
-                                dark:text-slate-100
-                            "
-                            maxLength={255}
-                        />
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleAddHabit}
-                                disabled={submitting || !newHabitName.trim()}
-                                className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800 disabled:opacity-50"
-                            >
-                                {submitting
-                                    ? "Saving..."
-                                    : editingHabit
-                                    ? "Update"
-                                    : "Create"
-                                }
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setAddingHabit(false);
-                                    setNewHabitName("");
-                                    setNewHabitDesc("");
-                                    setEditingHabit(null)
-                                }}
-                                className="
-                                    rounded-xl
-                                    bg-slate-100
-                                    px-4
-                                    py-2
-                                    text-sm
-                                    text-slate-700
-                                    hover:bg-slate-200
-
-                                    dark:bg-slate-700
-                                        dark:text-slate-200
-                                        dark:hover:bg-slate-600
-                                "
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
+                    <HabitForm
+                        editingHabit={editingHabit}
+                        name={newHabitName}
+                        description={newHabitDesc}
+                        onNameChange={setNewHabitName}
+                        onDescriptionChange={setNewHabitDesc}
+                        onSubmit={handleAddHabit}
+                        onCancel={() => {
+                            setAddingHabit(false);
+                            setNewHabitName("");
+                            setNewHabitDesc("");
+                            setEditingHabit(null);
+                        }}
+                        submitting={submitting}
+                    />
                 )}
 
                 {/* Habits list */}
@@ -570,68 +424,19 @@ export default function HabitualDashboard() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {sortedHabits.map((habit) => {
-                            const stats = habitStats[habit.id];
-                            const done = isDoneToday(habit.id);
-                            const isLoading = actionLoading[habit.id];
-
-                            return (
-                                <div
-                                    key={habit.id}
-                                        className="
-                                        flex items-center justify-between
-                                        rounded-3xl
-                                        bg-white
-                                        p-5
-                                        shadow-sm
-
-                                        dark:bg-slate-800
-                                        "
-                                >
-                                    <div>
-                                        <h2 className="text-base font-medium text-slate-900 dark:text-slate-100">{habit.name}</h2>
-                                        {habit.description && (
-                                            <p className="mt-0.5 text-sm text-slate-400">{habit.description}</p>
-                                        )}
-                                        {stats && (
-                                            <p className="mt-1 text-sm text-slate-500">
-                                                {stats.current_streak} day streak
-                                            </p>
-
-                                        )}
-
-                                        {renderHeatmap(habit.id)}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => handleMarkDone(habit)}
-                                            className={`rounded-2xl px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
-                                                done
-                                                    ? "bg-emerald-100 text-emerald-700"
-                                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
-                                            }`}
-                                        >
-                                            {isLoading ? "..." : done ? "Done ✓" : "Mark done"}
-                                        </button>
-
-                                        <button
-                                            onClick={() => handleEditHabit(habit)}
-                                            className="rounded-2xl px-3 py-2 text-sm text-slate-400 hover:bg-blue-50 hover:text-blue-500 transition"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onClick={() => handleDeleteHabit(habit.id)}
-                                            disabled={isLoading}
-                                            className="rounded-2xl px-3 py-2 text-sm text-slate-400 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-50"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {sortedHabits.map((habit) => (
+                            <HabitCard
+                                key={habit.id}
+                                habit={habit}
+                                stats={habitStats[habit.id]}
+                                heatmap={heatmaps[habit.id]}
+                                done={isDoneToday(habit.id)}
+                                isLoading={actionLoading[habit.id]}
+                                onDone={() => handleMarkDone(habit)}
+                                onEdit={() => handleEditHabit(habit)}
+                                onDelete={() => handleDeleteHabit(habit.id)}
+                            />
+                        ))}
                     </div>
                 )}
             </div>
