@@ -14,32 +14,42 @@ export default function HabitCard({
         <div
             key={habit.id}
             className="
-                                        flex items-center justify-between
-                                        rounded-3xl
-                                        bg-white
-                                        p-5
-                                        shadow-sm
+                flex items-center justify-between
+                rounded-3xl
+                bg-white
+                p-5
+                shadow-sm
 
-                                        dark:bg-slate-800
-                                        "
+                dark:bg-slate-800
+            "
         >
             <div>
                 <h2 className="text-base font-medium text-slate-900 dark:text-slate-100">{habit.name}</h2>
+
                 {habit.description && (
                     <p className="mt-0.5 text-sm text-slate-400">{habit.description}</p>
                 )}
-                {stats && (
-                    <p className="mt-1 text-sm text-slate-500">
-                        {stats.current_streak} day streak
-                    </p>
 
-                )}
+                <div className="mt-1 flex items-center justify-between">
+                    {stats &&
+                        <span className="text-sm text-slate-500">
+                            {stats.current_streak} day streak
+                        </span>
+                    }
+
+                    {habit.is_archived && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+                            Archived
+                        </span>
+                    )}
+                </div>
 
                 <Heatmap data={heatmap} />
             </div>
             <div className="flex items-center gap-2">
                 <button
                     onClick={onDone}
+                    disabled={isLoading || habit.is_archived}
                     className={`rounded-2xl px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
                         done
                             ? "bg-emerald-100 text-emerald-700"
