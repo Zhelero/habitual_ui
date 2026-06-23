@@ -8,7 +8,7 @@ export default function HabitCard({
     isLoading,
     onDone,
     onEdit,
-    onDelete,
+    onArchive,
 }) {
     return (
         <div
@@ -57,11 +57,11 @@ export default function HabitCard({
                 </button>
 
                 <button
-                    onClick={onDelete}
+                    onClick={onArchive}
                     disabled={isLoading}
                     className="rounded-2xl px-3 py-2 text-sm text-slate-400 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-50"
                 >
-                    Delete
+                    {habit.is_archived ? "Restore" : "Archive"}
                 </button>
             </div>
         </div>

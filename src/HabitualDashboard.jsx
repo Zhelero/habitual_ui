@@ -19,6 +19,7 @@ export default function HabitualDashboard() {
     const [actionError, setActionError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [sortBy, setSortBy] = useState("pending");
+    const [archiveFilter, setArchiveFilter] = useState("active");
     const [darkMode, setDarkMode] = useState(
         localStorage.getItem("theme") === "dark"
     );
@@ -32,10 +33,11 @@ export default function HabitualDashboard() {
         heatmaps,
 
         loading,
+        refreshing,
         error,
 
         fetchAll,
-    } = useHabits();
+    } = useHabits(archiveFilter);
 
     useEffect(() => {
         if (darkMode) {
@@ -119,19 +121,43 @@ export default function HabitualDashboard() {
         setAddingHabit(true);
     };
 
-    const handleDeleteHabit = async (habitId) => {
+    const handleArchiveHabit = async (habitId) => {
         setActionError("");
 
-        if (!confirm("Delete this habit?")) return;
+        if (!confirm("Archive this habit?")) return;
         setActionLoading((prev) => ({ ...prev, [habitId]: true }));
         try {
-            await api(`/habits/${habitId}/`, { method: "DELETE" });
+            await api(`/habits/${habitId}/archive/`, { method: "PATCH" });
             await fetchAll();
-            setSuccessMessage("Habit deleted");
+            setSuccessMessage("Habit archived");
         } catch (e) {
             setActionError(e.message);
         } finally {
             setActionLoading((prev) => ({ ...prev, [habitId]: false }));
+        }
+    };
+
+    const handleRestoreHabit = async (habitId) => {
+        setActionError("");
+
+        if (!confirm("Restore this habit?")) return;
+        setActionLoading((prev) => ({ ...prev, [habitId]: true }));
+        try {
+            await api(`/habits/${habitId}/restore/`, { method: "PATCH" });
+            await fetchAll();
+            setSuccessMessage("Habit restored");
+        } catch (e) {
+            setActionError(e.message);
+        } finally {
+            setActionLoading((prev) => ({ ...prev, [habitId]: false }));
+        }
+    };
+
+    const handleArchiveToggle = async (habit) => {
+        if (habit.is_archived) {
+            await handleRestoreHabit(habit.id);
+        } else {
+            await handleArchiveHabit(habit.id);
         }
     };
 
@@ -279,6 +305,12 @@ export default function HabitualDashboard() {
                     </div>
                 </header>
 
+                {refreshing && (
+                    <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-700" />
+                    </div>
+                )}
+
                 {/* Error */}
                 {actionError && (
                     <div className="
@@ -351,51 +383,84 @@ export default function HabitualDashboard() {
                     </div>
                 )}
 
-                {/* Sorting */}
-                <div className="mb-6 flex items-center justify-end gap-2">
-                    <label
-                        htmlFor="sort"
-                        className="text-sm text-slate-500"
-                    >
-                        Sort:
-                    </label>
+                {/* Filter + Sorting */}
+                <div className="mb-6 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
+                        {[
+                            { value: "active", label: "Active" },
+                            { value: "archived", label: "Archived" },
+                            { value: "all", label: "All" },
+                        ].map((option) => (
+                            <button
+                                key={option.value}
+                                onClick={() => setArchiveFilter(option.value)}
+                                disabled={refreshing}
+                                className={`
+                                    rounded-lg
+                                    px-3
+                                    py-1.5
+                                    text-sm
+                                    font-medium
+                                    transition
 
-                    <select
-                        id="sort"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="
-                            rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            px-3
-                            py-2
-                            text-sm
-                            text-slate-700
-                            outline-none
-                            focus:border-slate-400
+                                    ${
+                                        archiveFilter === option.value
+                                            ? "bg-slate-900 text-white dark:bg-slate-600"
+                                            : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+                                    }
+                                `}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
 
-                            dark:bg-slate-800
-                            dark:text-slate-200
-                        "
-                    >
-                        <option value="pending">
-                            Pending first
-                        </option>
 
-                        <option value="completed">
-                            Completed first
-                        </option>
+                    <div className="flex items-center gap-2">
+                        <label
+                            htmlFor="sort"
+                            className="text-sm text-slate-500"
+                        >
+                            Sort:
+                        </label>
 
-                        <option value="streak">
-                            By streak
-                        </option>
+                        <select
+                            id="sort"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="
+                                rounded-xl
+                                border
+                                border-slate-200
+                                bg-white
+                                px-3
+                                py-2
+                                text-sm
+                                text-slate-700
+                                outline-none
+                                focus:border-slate-400
 
-                        <option value="alphabet">
-                            Alphabetical
-                        </option>
-                    </select>
+                                dark:bg-slate-800
+                                dark:text-slate-200
+                            "
+                        >
+                            <option value="pending">
+                                Pending first
+                            </option>
+
+                            <option value="completed">
+                                Completed first
+                            </option>
+
+                            <option value="streak">
+                                By streak
+                            </option>
+
+                            <option value="alphabet">
+                                Alphabetical
+                            </option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* Add habit form */}
@@ -434,7 +499,7 @@ export default function HabitualDashboard() {
                                 isLoading={actionLoading[habit.id]}
                                 onDone={() => handleMarkDone(habit)}
                                 onEdit={() => handleEditHabit(habit)}
-                                onDelete={() => handleDeleteHabit(habit.id)}
+                                onArchive={() => handleArchiveToggle(habit)}
                             />
                         ))}
                     </div>
