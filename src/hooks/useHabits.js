@@ -7,7 +7,6 @@ export function useHabits(archiveFilter = "active") {
     const [user, setUser] = useState(null);
 
     const [habitStats, setHabitStats] = useState({});
-    const [heatmaps, setHeatmaps] = useState({});
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -35,27 +34,6 @@ export function useHabits(archiveFilter = "active") {
         setHabitStats(map);
     };
 
-    const fetchHeatmaps = async (habitsList) => {
-        const results = await Promise.allSettled(
-            habitsList.map((h) =>
-                api(`/habits/${h.id}/heatmap/`).then((heatmap) => ({
-                    id: h.id,
-                    heatmap,
-                }))
-            )
-        );
-
-        const map = {};
-
-        results.forEach((r) => {
-            if (r.status === "fulfilled") {
-                map[r.value.id] = r.value.heatmap;
-            }
-        });
-
-        setHeatmaps(map);
-    };
-
     const fetchAll = useCallback(async () => {
         if (!initialized) {
             setLoading(true);
@@ -77,10 +55,8 @@ export function useHabits(archiveFilter = "active") {
             setDashboard(dashboardData);
             setUser(userData);
 
-            await Promise.all([
-                fetchStats(habitsData.items),
-                fetchHeatmaps(habitsData.items),
-            ]);
+            await fetchStats(habitsData.items);
+
         } catch (e) {
             setError(e.message);
         } finally {
@@ -103,7 +79,6 @@ export function useHabits(archiveFilter = "active") {
         user,
 
         habitStats,
-        heatmaps,
 
         loading,
         refreshing,

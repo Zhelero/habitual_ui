@@ -1,15 +1,14 @@
-import Heatmap from "./Heatmap";
+import {Link} from "react-router-dom";
 
 export default function HabitCard({
-    habit,
-    stats,
-    done,
-    heatmap,
-    isLoading,
-    onDone,
-    onEdit,
-    onArchive,
-}) {
+                                      habit,
+                                      stats,
+                                      done,
+                                      isLoading,
+                                      onDone,
+                                      onEdit,
+                                      onArchive,
+                                  }) {
     return (
         <div
             key={habit.id}
@@ -23,14 +22,21 @@ export default function HabitCard({
                 dark:bg-slate-800
             "
         >
-            <div>
-                <h2 className="text-base font-medium text-slate-900 dark:text-slate-100">{habit.name}</h2>
+            <div className="flex-1 min-w-0">
+                <h2 className="text-base font-medium">
+                    <Link
+                        to={`/habits/${habit.id}`}
+                        className="text-slate-900 hover:underline dark:text-slate-100"
+                    >
+                        {habit.name}
+                    </Link>
+                </h2>
 
                 {habit.description && (
                     <p className="mt-0.5 text-sm text-slate-400">{habit.description}</p>
                 )}
 
-                <div className="mt-1 flex items-center justify-between">
+                <div className="mt-1 flex items-center gap-2">
                     {stats &&
                         <span className="text-sm text-slate-500">
                             {stats.current_streak} day streak
@@ -43,8 +49,6 @@ export default function HabitCard({
                         </span>
                     )}
                 </div>
-
-                <Heatmap data={heatmap} />
             </div>
             <div className="flex items-center gap-2">
                 <button
@@ -77,4 +81,3 @@ export default function HabitCard({
         </div>
     );
 }
-

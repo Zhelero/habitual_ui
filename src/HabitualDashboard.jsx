@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "./api";
 import { useAuth } from "./context/AuthContext";
 import { useHabits } from "./hooks/useHabits";
@@ -7,8 +8,29 @@ import HabitCard from "./components/HabitCard.jsx";
 import HabitForm from "./components/HabitForm.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 
-export default function HabitualDashboard() {
+export default function HabitualDashboard({ darkMode, setDarkMode }) {
     const { logout } = useAuth();
+
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const archiveFilter = searchParams.get("filter") || "active";
+    const sortBy = searchParams.get("sort") || "pending";
+
+    const setArchiveFilter = (value) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set("filter", value);
+            return next;
+        });
+    };
+
+    const setSortBy = (value) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set("sort", value);
+            return next;
+        });
+    };
 
     const [addingHabit, setAddingHabit] = useState(false);
     const [newHabitName, setNewHabitName] = useState("");
@@ -18,11 +40,7 @@ export default function HabitualDashboard() {
     const [actionLoading, setActionLoading] = useState({});
     const [actionError, setActionError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
-    const [sortBy, setSortBy] = useState("pending");
-    const [archiveFilter, setArchiveFilter] = useState("active");
-    const [darkMode, setDarkMode] = useState(
-        localStorage.getItem("theme") === "dark"
-    );
+
 
     const {
         habits,
@@ -30,7 +48,6 @@ export default function HabitualDashboard() {
         user,
 
         habitStats,
-        heatmaps,
 
         loading,
         refreshing,
@@ -40,17 +57,14 @@ export default function HabitualDashboard() {
     } = useHabits(archiveFilter);
 
     useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
+        if (!successMessage) return;
 
-        localStorage.setItem(
-            "theme",
-            darkMode ? "dark" : "light"
-        );
-    }, [darkMode]);
+        const timer = setTimeout(() => {
+            setSuccessMessage("");
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [successMessage]);
 
     const handleMarkDone = async (habit) => {
         setActionError("");
@@ -177,6 +191,7 @@ export default function HabitualDashboard() {
 
     const handleLogout = async () => {
         setActionError("");
+        setSuccessMessage("")
 
         try {
             await api("/auth/logout/", {
@@ -185,6 +200,7 @@ export default function HabitualDashboard() {
         } catch (e) {
             console.error(e);
         } finally {
+            setSearchParams({});
             logout();
         }
     };
@@ -485,7 +501,11 @@ export default function HabitualDashboard() {
                 {/* Habits list */}
                 {habits.length === 0 ? (
                     <div className="rounded-3xl bg-white p-10 text-center shadow-sm dark:bg-slate-800">
-                        <p className="text-slate-500">No habits yet. Add your first one.</p>
+                        <p className="text-slate-500">
+                            {archiveFilter === "archived"
+                                ? "No habits here yet."
+                                : "No habits yet. Add your first one."}
+                        </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -494,7 +514,6 @@ export default function HabitualDashboard() {
                                 key={habit.id}
                                 habit={habit}
                                 stats={habitStats[habit.id]}
-                                heatmap={heatmaps[habit.id]}
                                 done={isDoneToday(habit.id)}
                                 isLoading={actionLoading[habit.id]}
                                 onDone={() => handleMarkDone(habit)}
