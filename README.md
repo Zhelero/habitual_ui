@@ -1,10 +1,9 @@
-# Habitual UI
-
 > React frontend for [Habitual API](https://github.com/Zhelero/habitual_api) — a habit tracking app with streak statistics and 30-day heatmap.
 
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss)
+![React Router](https://img.shields.io/badge/React_Router-7-CA4245?style=flat-square&logo=reactrouter)
 
 ---
 
@@ -12,6 +11,7 @@
 
 ![Login](./src/assets/screenshot-login.png)
 ![Dashboard](./src/assets/screenshot-dashboard.png)
+![Habit](./src/assets/screenshot-habit-page.png)
 
 ---
 
@@ -20,11 +20,14 @@
 - Login and registration with JWT authentication
 - Auto-refresh of access token via refresh token rotation
 - Dashboard with total habits, completed today, and best streak
-- Full habit CRUD — create, edit, delete
+- Habit CRUD — create, edit, archive / restore (no hard delete)
+- Filter habits by Active / Archived / All, with a dedicated empty state per filter
+- Sort by pending, completed, streak, or alphabetically
 - Mark habits as done / undo
-- Current streak per habit
-- 30-day heatmap per habit
-- User data isolation — each user sees only their own habits
+- Dedicated habit detail page (`/habits/:id`) with full stats and a full-size 30-day heatmap
+- Persisted dark mode, applied consistently across every route
+- Filter and sort selection persisted in the URL (shareable, survives refresh, cleared on logout)
+- Auto-dismissing success messages
 
 ---
 
@@ -33,6 +36,7 @@
 | Layer      | Technology          |
 |------------|---------------------|
 | Framework  | React 18            |
+| Routing    | React Router 7      |
 | Build tool | Vite                |
 | Styling    | Tailwind CSS        |
 | Auth       | JWT (access + refresh tokens) |
@@ -41,21 +45,59 @@
 
 ---
 
-## Project Structure
+## Routes
 
-```
+| Route          | Description                                              |
+|----------------|-----------------------------------------------------------|
+| `/`            | Dashboard — habit list, filters, sorting                  |
+| `/habits/:id`  | Habit detail — streak/completion stats, heatmap, edit, archive |
+
+Unauthenticated visitors are shown the login/register screen regardless of route.
+
+---
+
+## Project Structure
 src/
+
 ├── components/
-│   ├── LoginForm.jsx       # login / register form
-│   └── RegisterForm.jsx
+
+│   ├── HabitCard.jsx        # habit row on the dashboard list
+
+│   ├── HabitForm.jsx        # create / edit form
+
+│   ├── Heatmap.jsx          # 30-day activity heatmap
+
+│   ├── ThemeToggle.jsx      # dark mode switch
+
+│   ├── LoginForm.jsx        # login form
+
+│   └── RegisterForm.jsx     # registration form
+
 ├── context/
-│   └── AuthContext.jsx     # JWT storage and refresh logic
+
+│   └── AuthContext.jsx      # JWT storage and refresh logic
+
 ├── hooks/
-│   └── useHabits.js        # data fetching and state
-├── HabitualDashboard.jsx   # main dashboard view
-├── api.js                  # API client with auth headers
-└── App.jsx                 # routing between auth and dashboard
-```
+
+│   ├── useHabits.js         # list + stats fetching for the dashboard
+
+│   └── useHabit.js          # single habit + stats + heatmap for the detail page
+
+├── utils/
+
+│   └── sortHabits.js
+
+├── AuthPage.jsx              # login / register screen
+
+├── HabitualDashboard.jsx      # dashboard: list, filters, sorting
+
+├── HabitDetailPage.jsx        # /habits/:id — full stats, heatmap, edit/archive
+
+├── api.js                     # API client with auth headers
+
+├── App.jsx                    # route definitions + dark mode state
+
+└── main.jsx                   # React Router + AuthProvider setup
 
 ---
 
