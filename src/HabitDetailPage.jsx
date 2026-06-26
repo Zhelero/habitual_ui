@@ -18,7 +18,7 @@ export default function HabitDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { habit, stats, heatmap, loading, error, refetch } = useHabit(id);
+    const { habit, stats, heatmap, loading, refreshing, error, refetch } = useHabit(id);
 
     const [editing, setEditing] = useState(false);
     const [name, setName] = useState("");
@@ -133,6 +133,12 @@ export default function HabitDetailPage() {
                     ← Back to dashboard
                 </button>
 
+                {refreshing && (
+                    <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-700" />
+                    </div>
+                )}
+
                 {actionError && (
                     <div className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 dark:bg-red-950 dark:border-red-800">
                         <div className="flex items-center justify-between">
@@ -179,11 +185,20 @@ export default function HabitDetailPage() {
                                 </p>
                             )}
 
+                            <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
+                                Tracking since{" "}
+                                {new Date(habit.created_at).toLocaleDateString("en-US", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                })}
+                            </p>
+
                             <div className="mt-6 flex flex-wrap gap-2">
                                 <button
                                     onClick={handleMarkDone}
                                     disabled={actionLoading || habit.is_archived}
-                                    className={`rounded-2xl px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
+                                    className={`rounded-2xl w-28 text-center py-2 text-sm font-medium transition disabled:opacity-50 ${
                                         isDoneToday
                                             ? "bg-emerald-100 text-emerald-700"
                                             : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"

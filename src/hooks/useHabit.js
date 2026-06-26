@@ -8,9 +8,15 @@ export function useHabit(habitId) {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [initialized, setInitialized] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     const fetchHabit = useCallback(async () => {
-        setLoading(true);
+        if (!initialized) {
+            setLoading(true);
+        } else {
+            setRefreshing(true);
+        }
         setError(null);
 
         try {
@@ -27,8 +33,10 @@ export function useHabit(habitId) {
             setError(e.message);
         } finally {
             setLoading(false);
+            setRefreshing(false);
+            setInitialized(true);
         }
-    }, [habitId]);
+    }, [habitId, initialized]);
 
     useEffect(() => {
         fetchHabit();
@@ -40,6 +48,7 @@ export function useHabit(habitId) {
         heatmap,
 
         loading,
+        refreshing,
         error,
 
         refetch: fetchHabit,
