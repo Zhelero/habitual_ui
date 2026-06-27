@@ -1,9 +1,13 @@
+import { HABIT_COLORS } from "../utils/habitColors";
+
 export default function HabitForm({
     editingHabit,
     newHabitName,
     setNewHabitName,
     newHabitDesc,
     setNewHabitDesc,
+    newHabitColor,
+    setNewHabitColor,
     submitting,
     onSubmit,
     onCancel,
@@ -61,6 +65,33 @@ export default function HabitForm({
                                     "
                 maxLength={255}
             />
+            
+            <div className="mb-4 flex items-center gap-2">
+                {HABIT_COLORS.map((c) => (
+                    <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setNewHabitColor(c.value)}
+                        aria-label={c.value}
+                        className={`h-6 w-6 rounded-full flex-shrink-0 ${c.swatch} transition ${
+                            newHabitColor === c.value
+                                ? "ring-2 ring-offset-2 ring-slate-900 dark:ring-offset-slate-800 dark:ring-slate-100"
+                                : ""
+                        }`}
+                    />
+                ))}
+
+                {newHabitColor && (
+                    <button
+                        type="button"
+                        onClick={() => setNewHabitColor(null)}
+                        className="text-xs text-slate-400 hover:text-slate-600"
+                    >
+                        Clear
+                    </button>
+                )}
+            </div>
+
             <div className="flex gap-3">
                 <button
                     onClick={onSubmit}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "./api";
 import { useHabit } from "./hooks/useHabit";
+import { habitColorClass } from "./utils/habitColors";
 import Heatmap from "./components/Heatmap";
 import HabitForm from "./components/HabitForm";
 
@@ -23,6 +24,7 @@ export default function HabitDetailPage() {
     const [editing, setEditing] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [color, setColor] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState("");
@@ -31,6 +33,7 @@ export default function HabitDetailPage() {
         setActionError("");
         setName(habit.name);
         setDescription(habit.description || "");
+        setColor(habit.color);
         setEditing(true);
     };
 
@@ -45,6 +48,7 @@ export default function HabitDetailPage() {
                 body: JSON.stringify({
                     name: name.trim(),
                     description: description.trim() || null,
+                    color: color,
                 }),
             });
             setEditing(false);
@@ -161,6 +165,8 @@ export default function HabitDetailPage() {
                             setNewHabitName={setName}
                             newHabitDesc={description}
                             setNewHabitDesc={setDescription}
+                            newHabitColor={color}
+                            setNewHabitColor={setColor}
                             onSubmit={handleSave}
                             onCancel={() => setEditing(false)}
                             submitting={submitting}
@@ -168,7 +174,10 @@ export default function HabitDetailPage() {
                     ) : (
                         <>
                             <div className="flex items-center justify-between gap-2">
-                                <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                    {habitColorClass(habit.color) && (
+                                        <span className={`h-3 w-3 rounded-full shrink-0 gap-2 ${habitColorClass(habit.color)}`} />
+                                    )}
                                     {habit.name}
                                 </h1>
 

@@ -35,6 +35,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
     const [addingHabit, setAddingHabit] = useState(false);
     const [newHabitName, setNewHabitName] = useState("");
     const [newHabitDesc, setNewHabitDesc] = useState("");
+    const [newHabitColor, setNewHabitColor] = useState(null);
     const [editingHabit, setEditingHabit] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [actionLoading, setActionLoading] = useState({});
@@ -100,6 +101,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     body: JSON.stringify({
                         name: newHabitName.trim(),
                         description: newHabitDesc.trim() || null,
+                        color: newHabitColor,
                     }),
                 });
                 setSuccessMessage("Habit updated");
@@ -109,12 +111,14 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     body: JSON.stringify({
                         name: newHabitName.trim(),
                         description: newHabitDesc.trim() || null,
+                        color: newHabitColor,
                     }),
                 });
                 setSuccessMessage("Habit created");
             }
             setNewHabitName("");
             setNewHabitDesc("");
+            setNewHabitColor(null);
             setAddingHabit(false);
             setEditingHabit(null);
             await fetchAll();
@@ -131,6 +135,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
 
         setNewHabitName(habit.name);
         setNewHabitDesc(habit.description || "");
+        setNewHabitColor(habit.color);
 
         setAddingHabit(true);
     };
@@ -276,6 +281,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                                 setEditingHabit(null);
                                 setNewHabitName("");
                                 setNewHabitDesc("");
+                                setNewHabitColor(null);
                                 setAddingHabit(true);
                             }}
                             className="
@@ -487,11 +493,14 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                         setNewHabitName={setNewHabitName}
                         newHabitDesc={newHabitDesc}
                         setNewHabitDesc={setNewHabitDesc}
+                        newHabitColor={newHabitColor}
+                        setNewHabitColor={setNewHabitColor}
                         onSubmit={handleAddHabit}
                         onCancel={() => {
                             setAddingHabit(false);
                             setNewHabitName("");
                             setNewHabitDesc("");
+                            setNewHabitColor(null);
                             setEditingHabit(null);
                         }}
                         submitting={submitting}

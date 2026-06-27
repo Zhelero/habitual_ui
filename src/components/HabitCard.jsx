@@ -1,3 +1,4 @@
+import { habitColorClass } from "../utils/habitColors";
 import {Link} from "react-router-dom";
 
 function WeekStrip({ days }) {
@@ -50,11 +51,11 @@ export default function HabitCard({
             "
         >
             <div className="w-[300px] flex-shrink-0">
-                <h2 className="text-base font-medium truncate">
-                    <Link
-                        to={`/habits/${habit.id}`}
-                        className="text-slate-900 hover:underline dark:text-slate-100"
-                    >
+                <h2 className="flex items-center gap-2 text-base font-medium ">
+                    {habitColorClass(habit.color) && (
+                        <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${habitColorClass(habit.color)}`} />
+                    )}
+                    <Link to={`/habits/${habit.id}`} className="min-w-0 flex-1 truncate text-slate-900 hover:underline dark:text-slate-100">
                         {habit.name}
                     </Link>
                 </h2>
