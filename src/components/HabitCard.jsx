@@ -72,7 +72,7 @@ export default function HabitCard({
                     }
 
                     {habit.is_archived && (
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+                        <span data-testid="habit-badge-archived" className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
                             Archived
                         </span>
                     )}
@@ -83,6 +83,7 @@ export default function HabitCard({
 
                 <button
                     onClick={onDone}
+                    data-testid="habit-button-done"
                     disabled={isLoading || habit.is_archived}
                     className={`rounded-2xl w-28 text-center py-2 text-sm font-medium transition disabled:opacity-50 ${
                         done
@@ -102,6 +103,7 @@ export default function HabitCard({
 
                 <button
                     onClick={onArchive}
+                    data-testid="habit-toggle-archive"
                     disabled={isLoading}
                     className="rounded-2xl px-3 py-2 text-sm text-slate-400 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-50"
                 >

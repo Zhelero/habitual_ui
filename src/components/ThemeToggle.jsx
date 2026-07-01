@@ -5,6 +5,7 @@ export default function ThemeToggle({
     return (
         <button
             type="button"
+            data-testid="theme-toggle"
             onClick={() => setDarkMode(!darkMode)}
             className="
                         rounded-2xl

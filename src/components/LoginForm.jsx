@@ -133,6 +133,7 @@ export default function LoginForm() {
 
             <button
                 type="submit"
+                data-testid="auth-tab-login-button"
                 disabled={
                     loading ||
                     !email.trim() ||

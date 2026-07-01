@@ -145,6 +145,7 @@ export default function RegisterForm() {
 
             <button
                 type="submit"
+                data-testid="auth-tab-register-button"
                 disabled={
                     loading ||
                     !email.trim() ||

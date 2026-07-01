@@ -225,6 +225,7 @@ export default function HabitDetailPage() {
 
                                 <button
                                     onClick={handleArchiveToggle}
+                                    data-testid="habit-detail-toggle-archive"
                                     disabled={actionLoading}
                                     className="rounded-2xl px-4 py-2 text-sm text-slate-500 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-50"
                                 >

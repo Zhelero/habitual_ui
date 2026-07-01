@@ -347,7 +347,9 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                         dark:border-red-800
                     ">
                         <div className="flex items-center justify-between">
-                            <p className="text-sm text-red-600">{actionError}</p>
+                            <p className="text-sm text-red-600" data-testid="dashboard-error-message">
+                                {actionError}
+                            </p>
 
                             <button
                                 onClick={() => setActionError("")}
@@ -373,7 +375,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                         dark:border-emerald-800
                     ">
                         <div className="flex items-center justify-between">
-                            <p className="text-sm text-emerald-700">
+                            <p className="text-sm text-emerald-700" data-testid="dashboard-success-message">
                                 {successMessage}
                             </p>
 
@@ -392,15 +394,18 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     <div className="mb-6 grid grid-cols-3 gap-4">
                         <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Total habits</p>
-                            <p className="mt-2 text-2xl font-semibold">{dashboard.total_habits}</p>
+                            <p data-testid="dashboard-total-habits-amount" className="mt-2 text-2xl font-semibold">{dashboard.total_habits}</p>
                         </div>
                         <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Completed today</p>
-                            <p className="mt-2 text-2xl font-semibold">{dashboard.completed_today}</p>
+                            <p data-testid="dashboard-completed-today-amount" className="mt-2 text-2xl font-semibold">{dashboard.completed_today}</p>
                         </div>
                         <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Best streak</p>
-                            <p className="mt-2 text-2xl font-semibold">{dashboard.best_streak} 🔥</p>
+                            <p data-testid="dashboard-best-streak-amount" className="mt-2 text-2xl font-semibold">
+                                {dashboard.best_streak}
+                                {dashboard.best_streak > 0 && " 🔥"}
+                            </p>
                         </div>
                     </div>
                 )}

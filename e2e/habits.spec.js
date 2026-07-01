@@ -1,0 +1,113 @@
+import { test, expect } from "./fixtures";
+
+async function createHabitViaUI(page, name) {
+    await page.getByRole("button", { name: "+ Add habit" }).click();
+    await page.getByPlaceholder("Habit name").fill(name);
+    await page.getByRole("button", { name: "Create" }).click();
+    await expect(page.getByRole("heading", { name })).toBeVisible();
+}
+
+test.describe("Habits", () => {
+    test("creating a habit shows it on the dashboard", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Read 20 pages");
+
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
+    });
+
+    test("marking a habit done toggles its state", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Drink water");
+
+        const doneButton = authedPage.getByRole("button", { name: "Mark done" });
+        await doneButton.click();
+
+        await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("1");
+        await expect(authedPage.getByTestId("dashboard-best-streak-amount")).toHaveText("1 🔥");
+
+        await authedPage.getByRole("button", { name: "Done ✓" }).click();
+
+        await expect(authedPage.getByRole("button", { name: "Mark done" })).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("0");
+        await expect(authedPage.getByTestId("dashboard-best-streak-amount")).toHaveText("0");
+    });
+
+    test("archiving a habit moves it to the Archived tab, and it can be restored", async ({
+                                                                                              authedPage,
+                                                                                          }) => {
+        authedPage.on("dialog", (dialog) => dialog.accept());
+
+        await createHabitViaUI(authedPage, "Meditate");
+
+        const archiveToggle = authedPage.getByTestId("habit-toggle-archive");
+
+        await expect(archiveToggle).toHaveText("Archive");
+        await archiveToggle.click();
+
+        await expect(authedPage.getByText("No habits yet. Add your first one.")).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("0");
+
+        await authedPage.getByRole("button", { name: "Archived", exact: true }).click();
+
+        await expect(authedPage.getByRole("heading", { name: "Meditate" })).toBeVisible();
+        await expect(authedPage.getByTestId("habit-badge-archived")).toBeVisible();
+        await expect(archiveToggle).toHaveText("Restore");
+
+        await archiveToggle.click();
+
+        await expect(authedPage.getByText("No habits here yet.")).toBeVisible();
+
+        await authedPage.getByRole("button", { name: "Active", exact: true }).click();
+
+        await expect(authedPage.getByRole("heading", { name: "Meditate" })).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
+        await expect(archiveToggle).toHaveText("Archive");
+    });
+
+    test("creating a habit with duplicate name causes error", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Some action");
+        await createHabitViaUI(authedPage, "Some action");
+
+        await expect(authedPage.getByTestId("dashboard-error-message")).toHaveText("Habit already exists");
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
+    })
+
+    test("page refresh doesn't affect theme", async ({ authedPage }) => {
+        await authedPage.getByTestId("theme-toggle").click();
+
+        await expect(authedPage.getByTestId("theme-toggle")).toHaveText("☀️");
+
+        await authedPage.reload()
+
+        await expect(authedPage.getByTestId("theme-toggle")).toHaveText("☀️");
+    })
+
+    test("selected theme is preserved after refresh", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Create theme");
+
+        await authedPage.getByRole("button", { name: "Mark done" }).click();
+
+        await authedPage.reload()
+
+        await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+    })
+
+    test("selected dashboard filter is preserved after refresh", async ({ authedPage }) => {
+        authedPage.on("dialog", (dialog) => dialog.accept());
+
+        await createHabitViaUI(authedPage, "Walk around");
+
+        await authedPage.getByTestId("habit-toggle-archive").click();
+        await authedPage.getByRole("button", { name: "Archived", exact: true }).click();
+
+        await expect(authedPage.getByRole("heading", { name: "Walk around" })).toBeVisible();
+        await expect(authedPage.getByTestId("habit-badge-archived")).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("0");
+
+        await authedPage.reload()
+
+        await expect(authedPage.getByTestId("habit-badge-archived")).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("0");
+        await expect(authedPage.getByRole("heading", { name: "Walk around" })).toBeVisible();
+    })
+
+});
