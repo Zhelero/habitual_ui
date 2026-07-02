@@ -133,8 +133,8 @@ e2e/                          # Playwright end-to-end tests
 ### Install and run
 
 ```bash
-git clone https://github.com/Zhelero/habitual-ui
-cd habitual-ui
+git clone https://github.com/Zhelero/habitual_ui
+cd habitual_ui
 
 npm install
 npm run dev
@@ -163,7 +163,7 @@ cd habitual_api
 uvicorn app.main:app --reload
 
 # Terminal 2 — UI
-cd habitual-ui
+cd habitual_ui
 npm run dev
 ```
 
