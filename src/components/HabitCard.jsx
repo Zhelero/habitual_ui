@@ -53,7 +53,11 @@ export default function HabitCard({
             <div className="w-[300px] flex-shrink-0">
                 <h2 className="flex items-center gap-2 text-base font-medium ">
                     {habitColorClass(habit.color) && (
-                        <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${habitColorClass(habit.color)}`} />
+                        <span
+                            data-testid="habit-color-dot"
+                            data-color={habit.color}
+                            className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${habitColorClass(habit.color)}`}
+                        />
                     )}
                     <Link to={`/habits/${habit.id}`} className="min-w-0 flex-1 truncate text-slate-900 hover:underline dark:text-slate-100">
                         {habit.name}

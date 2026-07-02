@@ -73,6 +73,8 @@ export default function HabitForm({
                         type="button"
                         onClick={() => setNewHabitColor(c.value)}
                         aria-label={c.value}
+                        data-testid={`habit-color-option-${c.value}`}
+                        data-selected={newHabitColor === c.value}
                         className={`h-6 w-6 rounded-full flex-shrink-0 ${c.swatch} transition ${
                             newHabitColor === c.value
                                 ? "ring-2 ring-offset-2 ring-slate-900 dark:ring-offset-slate-800 dark:ring-slate-100"
@@ -85,6 +87,7 @@ export default function HabitForm({
                     <button
                         type="button"
                         onClick={() => setNewHabitColor(null)}
+                        data-testid="habit-color-clear"
                         className="text-xs text-slate-400 hover:text-slate-600"
                     >
                         Clear

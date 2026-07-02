@@ -176,7 +176,11 @@ export default function HabitDetailPage() {
                             <div className="flex items-center justify-between gap-2">
                                 <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
                                     {habitColorClass(habit.color) && (
-                                        <span className={`h-3 w-3 rounded-full shrink-0 gap-2 ${habitColorClass(habit.color)}`} />
+                                        <span
+                                            data-testid="habit-color-dot"
+                                            data-color={habit.color}
+                                            className={`h-3 w-3 rounded-full shrink-0 gap-2 ${habitColorClass(habit.color)}`}
+                                        />
                                     )}
                                     {habit.name}
                                 </h1>

@@ -1,11 +1,5 @@
 import { test, expect } from "./fixtures";
-
-async function createHabitViaUI(page, name) {
-    await page.getByRole("button", { name: "+ Add habit" }).click();
-    await page.getByPlaceholder("Habit name").fill(name);
-    await page.getByRole("button", { name: "Create" }).click();
-    await expect(page.getByRole("heading", { name })).toBeVisible();
-}
+import {createHabitViaUI} from "./helpers.js";
 
 test.describe("Habit detail page", () => {
     test("navigating from the dashboard shows stats and a back link", async ({
