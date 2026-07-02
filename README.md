@@ -21,6 +21,8 @@
 - Auto-refresh of access token via refresh token rotation
 - Dashboard with total habits, completed today, and best streak
 - Habit CRUD — create, edit, archive / restore (no hard delete)
+- Custom color per habit, shown on the dashboard and detail page
+- 7-day activity strip on each dashboard habit card
 - Filter habits by Active / Archived / All, with a dedicated empty state per filter
 - Sort by pending, completed, streak, or alphabetically
 - Mark habits as done / undo
@@ -28,6 +30,7 @@
 - Persisted dark mode, applied consistently across every route
 - Filter and sort selection persisted in the URL (shareable, survives refresh, cleared on logout)
 - Auto-dismissing success messages
+- End-to-end test suite (Playwright) covering auth, habit CRUD, detail page, and color selection
 
 ---
 
@@ -42,6 +45,7 @@
 | Auth       | JWT (access + refresh tokens) |
 | API client | fetch (native)      |
 | State      | React Context + hooks |
+| E2E testing | Playwright         |
 
 ---
 
@@ -85,7 +89,9 @@ src/
 
 ├── utils/
 
-│   └── sortHabits.js
+│   ├── sortHabits.js
+
+│   └── habitColors.js       # HABIT_COLORS palette + habitColorClass helper
 
 ├── AuthPage.jsx              # login / register screen
 
@@ -98,6 +104,22 @@ src/
 ├── App.jsx                    # route definitions + dark mode state
 
 └── main.jsx                   # React Router + AuthProvider setup
+
+e2e/                          # Playwright end-to-end tests
+
+├── auth.spec.js               # login / registration / token refresh
+
+├── habits.spec.js             # habit CRUD, filters, sorting
+
+├── habit-detail.spec.js       # detail page stats, edit, archive
+
+├── habit-color.spec.js        # color picker and color persistence
+
+├── fixtures.js                 # authedPage / registeredUser fixtures
+
+├── helpers.js                  # shared test helpers (createHabitViaUI, uniqueEmail)
+
+└── global-setup.js             # test environment bootstrap
 
 ---
 
@@ -119,6 +141,17 @@ npm run dev
 ```
 
 UI will be available at `http://localhost:5173`
+
+---
+
+## Running E2E tests
+
+```bash
+npx playwright install   # first time only
+npm run test:e2e
+```
+
+Tests run against a live API on `http://localhost:8000`, so make sure the backend is up first. Each test registers its own user, so runs are isolated from each other.
 
 ---
 
