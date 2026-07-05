@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { api } from "../api";
 
 export function useHabits(archiveFilter = "active") {
@@ -13,7 +13,12 @@ export function useHabits(archiveFilter = "active") {
     const [initialized, setInitialized] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchStats = async (habitsList) => {
+    // Guards against a stale response overwriting newer state — e.g. if
+    // archiveFilter changes again (or the component unmounts) before a
+    // previous fetch resolves.
+    const requestIdRef = useRef(0);
+
+    const fetchStats = async (habitsList, requestId) => {
         const results = await Promise.allSettled(
             habitsList.map((h) =>
                 api(`/habits/${h.id}/stats/`).then((stats) => ({
@@ -22,6 +27,8 @@ export function useHabits(archiveFilter = "active") {
                 }))
             )
         );
+
+        if (requestId !== requestIdRef.current) return;
 
         const map = {};
 
@@ -35,6 +42,8 @@ export function useHabits(archiveFilter = "active") {
     };
 
     const fetchAll = useCallback(async () => {
+        const requestId = ++requestIdRef.current;
+
         if (!initialized) {
             setLoading(true);
         } else {
@@ -51,27 +60,33 @@ export function useHabits(archiveFilter = "active") {
                 api("/auth/me"),
             ]);
 
+            if (requestId !== requestIdRef.current) return;
+
             setHabits(habitsData.items);
             setDashboard(dashboardData);
             setUser(userData);
 
-            await fetchStats(habitsData.items);
+            await fetchStats(habitsData.items, requestId);
 
         } catch (e) {
+            if (requestId !== requestIdRef.current) return;
             setError(e.message);
         } finally {
-            setLoading(false);
-            setRefreshing(false);
-            setInitialized(true);
-
+            if (requestId === requestIdRef.current) {
+                setLoading(false);
+                setRefreshing(false);
+                setInitialized(true);
+            }
         }
     }, [archiveFilter, initialized]);
 
     useEffect(() => {
+        // Fetching on mount/filter change is an intentional, guarded exception:
+        // requestIdRef above discards stale responses, so this is safe despite
+        // the lint rule's generic caution about setState-in-effect.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchAll();
     }, [fetchAll]);
-
-
 
     return {
         habits,

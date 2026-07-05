@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "./api";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth.js";
 import { useHabits } from "./hooks/useHabits";
 import { sortHabits } from "./utils/sortHabits.js";
 import HabitCard from "./components/HabitCard.jsx";
