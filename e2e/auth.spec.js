@@ -8,12 +8,25 @@ test.describe("Authentication", () => {
         await page.getByTestId("auth-tab-register").click();
 
         await page.getByPlaceholder("Email").fill(uniqueEmail());
-        await page.getByPlaceholder("Password").fill(TEST_PASSWORD);
+        await page.getByPlaceholder("Password", { exact: true }).fill(TEST_PASSWORD);
+        await page.getByPlaceholder("Confirm password").fill(TEST_PASSWORD);
         await page.getByTestId("auth-tab-register-button").click();
 
         await expect(
             page.getByText("Account created. Please sign in.")
         ).toBeVisible();
+    });
+
+    test("register button stays disabled when passwords don't match", async ({ page }) => {
+        await page.goto("/");
+
+        await page.getByTestId("auth-tab-register").click();
+
+        await page.getByPlaceholder("Email").fill(uniqueEmail());
+        await page.getByPlaceholder("Password", { exact: true }).fill(TEST_PASSWORD);
+        await page.getByPlaceholder("Confirm password").fill("something-else");
+
+        await expect(page.getByTestId("auth-tab-register-button")).toBeDisabled();
     });
 
     test("a registered user can log in and reach the dashboard", async ({
