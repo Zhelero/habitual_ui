@@ -1,8 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
+
     testDir: "./e2e",
-    fullyParallel: true,
+    // Tests share one backend/DB instance (webServer below), so running
+    // them concurrently causes intermittent, hard-to-reproduce failures
+    // (race conditions on the shared server, not bugs in the tests
+    // themselves). Force a single worker so every run is deterministic.
+    fullyParallel: false,
+    workers: 1,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 1 : 0,
     reporter: "html",
