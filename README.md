@@ -4,6 +4,9 @@
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss)
 ![React Router](https://img.shields.io/badge/React_Router-7-CA4245?style=flat-square&logo=reactrouter)
+![Tests](https://img.shields.io/badge/e2e_tests-21%20passed-brightgreen?style=flat-square&logo=playwright)
+![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3?style=flat-square&logo=eslint)
+![CI](https://github.com/Zhelero/habitual_ui/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -17,7 +20,7 @@
 
 ## Features
 
-- Login and registration with JWT authentication
+- Login and registration with JWT authentication, with password confirmation on sign-up
 - Auto-refresh of access token via refresh token rotation
 - Dashboard with total habits, completed today, and best streak
 - Habit CRUD — create, edit, archive / restore (no hard delete)
@@ -31,6 +34,7 @@
 - Filter and sort selection persisted in the URL (shareable, survives refresh, cleared on logout)
 - Auto-dismissing success messages
 - End-to-end test suite (Playwright) covering auth, habit CRUD, detail page, and color selection
+- CI pipeline (GitHub Actions): lint, then E2E tests run against a real backend + PostgreSQL, checked out and started inside the same workflow
 
 ---
 
@@ -46,6 +50,7 @@
 | API client | fetch (native)      |
 | State      | React Context + hooks |
 | E2E testing | Playwright         |
+| Linting    | ESLint 9 (flat config) |
 
 ---
 
@@ -79,9 +84,13 @@ src/
 
 ├── context/
 
-│   └── AuthContext.jsx      # JWT storage and refresh logic
+│   ├── AuthContext.jsx      # AuthProvider component (login/logout, token state)
+
+│   └── authContextObject.js # raw React context object (kept separate for Fast Refresh)
 
 ├── hooks/
+
+│   ├── useAuth.js           # useAuth hook (reads AuthContext)
 
 │   ├── useHabits.js         # list + stats fetching for the dashboard
 
@@ -121,6 +130,10 @@ e2e/                          # Playwright end-to-end tests
 
 └── global-setup.js             # test environment bootstrap
 
+.github/workflows/
+
+└── ci.yml                       # lint job + e2e job (checks out habitual_api, runs it in Docker, then Playwright)
+
 ---
 
 ## Getting Started
@@ -152,6 +165,17 @@ npm run test:e2e
 ```
 
 Tests run against a live API on `http://localhost:8000`, so make sure the backend is up first. Each test registers its own user, so runs are isolated from each other.
+
+---
+
+## CI
+
+On every push/PR, GitHub Actions runs two jobs:
+
+1. **lint** — ESLint against the whole codebase
+2. **e2e** — checks out [habitual_api](https://github.com/Zhelero/habitual_api) into the same job, starts it with Docker (Postgres + FastAPI, migrations included), waits for `/health`, then runs the full Playwright suite against that live backend. The Playwright HTML report is uploaded as a build artifact either way, so a failing run can be inspected without reproducing it locally.
+
+The two repos stay separate, but tests always run against the real API, not a mock.
 
 ---
 
