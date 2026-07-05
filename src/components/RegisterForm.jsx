@@ -5,6 +5,7 @@ import ThemeToggle from "./ThemeToggle.jsx";
 export default function RegisterForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
 
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
@@ -33,6 +34,12 @@ export default function RegisterForm() {
         setErrors([]);
         setSuccess("");
 
+        if (password !== confirmPassword) {
+            setErrors(["Passwords do not match"]);
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch(`${API_BASE}/auth/register/`, {
                 method: "POST",
@@ -56,6 +63,7 @@ export default function RegisterForm() {
                     setErrors([data.detail || "Registration failed"]);
                 }
                 setPassword("");
+                setConfirmPassword("");
                 return;
             }
 
@@ -66,8 +74,10 @@ export default function RegisterForm() {
 
             setEmail("");
             setPassword("");
+            setConfirmPassword("");
         } catch (err) {
             setPassword("");
+            setConfirmPassword("");
             setErrors([err.message]);
         } finally {
             setLoading(false);
@@ -124,6 +134,27 @@ export default function RegisterForm() {
                 }`}
             />
 
+            <input
+                type="password"
+                placeholder="Confirm password"
+                data-testid="auth-register-confirm-password"
+                value={confirmPassword}
+                onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setErrors([]);
+                    setSuccess("");
+                }}
+                className={`w-full rounded-xl border px-4 py-2 outline-none 
+                    dark:bg-slate-800
+                    dark:text-slate-100
+                    dark:border-slate-700
+                    ${
+                    errors.length > 0
+                        ? "border-red-300"
+                        : "border-slate-200 focus:border-slate-400"
+                }`}
+            />
+
             {errors.length > 0 && (
                 <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3
                     dark:bg-red-950
@@ -149,7 +180,9 @@ export default function RegisterForm() {
                 disabled={
                     loading ||
                     !email.trim() ||
-                    !password.trim()
+                    !password.trim() ||
+                    !confirmPassword.trim() ||
+                    password !== confirmPassword
                 }
                 className="
                     w-full rounded-xl
