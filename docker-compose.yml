@@ -1,0 +1,25 @@
+services:
+  ui:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      # Bind-mounting source from the Windows filesystem into a Linux
+      # container can make Vite's file watcher miss changes — polling
+      # works everywhere at the cost of slightly higher CPU usage.
+      - CHOKIDAR_USEPOLLING=true
+
+  # Optional: build + serve the production bundle via nginx, to sanity-check
+  # a real prod build locally. Run with: docker compose --profile prod up
+  preview:
+    profiles: [ "prod" ]
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "8080:80"
