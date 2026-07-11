@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "./api";
 import { useHabit } from "./hooks/useHabit";
+import { useHabitActions } from "./hooks/useHabitActions.jsx"
 import { habitColorClass } from "./utils/habitColors";
 import Heatmap from "./components/Heatmap";
 import HabitForm from "./components/HabitForm";
+import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
 
 function StatCard({ label, value }) {
     return (
@@ -26,7 +28,7 @@ export default function HabitDetailPage() {
     const [description, setDescription] = useState("");
     const [color, setColor] = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const [actionLoading, setActionLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState({});
     const [actionError, setActionError] = useState("");
 
     const startEdit = () => {
@@ -60,6 +62,15 @@ export default function HabitDetailPage() {
         }
     };
 
+    const {
+        noteDialogHabit,
+
+        handleMarkDone,
+        handleMarkUndo,
+        submitCompletion,
+        closeDialog,
+    } = useHabitActions({ fetchAll: refetch, setActionLoading, setActionError });
+
     const handleArchiveToggle = async () => {
         const isArchived = habit.is_archived;
 
@@ -67,7 +78,7 @@ export default function HabitDetailPage() {
             return;
         }
 
-        setActionLoading(true);
+        setActionLoading((prev) => ({ ...prev, [id]: true }));
         setActionError("");
         try {
             await api(`/habits/${id}/${isArchived ? "restore" : "archive"}/`, {
@@ -85,23 +96,6 @@ export default function HabitDetailPage() {
     const isDoneToday = stats?.last_7_days?.some(
         (d) => d.date === today && d.done
     );
-
-    const handleMarkDone = async () => {
-        setActionLoading(true);
-        setActionError("");
-        try {
-            if (isDoneToday) {
-                await api(`/habits/${id}/done/`, { method: "DELETE" });
-            } else {
-                await api(`/habits/${id}/done/`, { method: "POST" });
-            }
-            await refetch();
-        } catch (e) {
-            setActionError(e.message);
-        } finally {
-            setActionLoading(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -209,15 +203,15 @@ export default function HabitDetailPage() {
 
                             <div className="mt-6 flex flex-wrap gap-2">
                                 <button
-                                    onClick={handleMarkDone}
-                                    disabled={actionLoading || habit.is_archived}
+                                    onClick={() => (isDoneToday ? handleMarkUndo(habit) : handleMarkDone(habit))}
+                                    disabled={actionLoading[id] || habit.is_archived}
                                     className={`rounded-2xl w-28 text-center py-2 text-sm font-medium transition disabled:opacity-50 ${
                                         isDoneToday
                                             ? "bg-emerald-100 text-emerald-700"
                                             : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
                                     }`}
                                 >
-                                    {actionLoading ? "..." : isDoneToday ? "Done ✓" : "Mark done"}
+                                    {actionLoading[id] ? "..." : isDoneToday ? "Done ✓" : "Mark done"}
                                 </button>
 
                                 <button
@@ -230,7 +224,7 @@ export default function HabitDetailPage() {
                                 <button
                                     onClick={handleArchiveToggle}
                                     data-testid="habit-detail-toggle-archive"
-                                    disabled={actionLoading}
+                                    disabled={actionLoading[id]}
                                     className="rounded-2xl px-4 py-2 text-sm text-slate-500 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-50"
                                 >
                                     {habit.is_archived ? "Restore" : "Archive"}
@@ -256,6 +250,13 @@ export default function HabitDetailPage() {
                     <Heatmap data={heatmap} />
                 </div>
             </div>
+
+            <CompletionNoteDialog
+                key={noteDialogHabit?.id ?? "closed"}
+                habit={noteDialogHabit}
+                onCancel={closeDialog}
+                onSubmit={submitCompletion}
+            />
         </div>
     );
 }

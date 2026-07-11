@@ -18,3 +18,15 @@ export async function createHabitViaUI(page, name) {
     await page.getByRole("button", { name: "Create" }).click();
     await expect(page.getByRole("heading", { name })).toBeVisible();
 }
+
+// Clicks "Mark done" and completes the note dialog that appears after it.
+// Pass a note string to save it, or omit it to click "Skip note".
+export async function markHabitDoneViaUI(page, note) {
+    await page.getByRole("button", { name: "Mark done" }).click();
+    if (note) {
+        await page.getByPlaceholder("Add a note...").fill(note);
+        await page.getByRole("button", { name: "Save" }).click();
+    } else {
+        await page.getByRole("button", { name: "Skip note" }).click();
+    }
+}

@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import {createHabitViaUI} from "./helpers.js";
+import {createHabitViaUI, markHabitDoneViaUI } from "./helpers.js";
 
 test.describe("Habit detail page", () => {
     test("navigating from the dashboard shows stats and a back link", async ({
@@ -48,7 +48,19 @@ test.describe("Habit detail page", () => {
         await authedPage.getByRole("heading", { name: "Journal" }).getByRole("link").click();
         await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
 
-        await authedPage.getByRole("button", { name: "Mark done" }).click();
+        await markHabitDoneViaUI(authedPage)
+        await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+    });
+
+    test("marking a habit done with a note from the detail page completes the flow", async ({
+                                                                                                authedPage
+    }) => {
+        await createHabitViaUI(authedPage, "Read");
+
+        await authedPage.getByRole("heading", { name: "Read" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        await markHabitDoneViaUI(authedPage, "Felt great today");
         await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
     });
 
