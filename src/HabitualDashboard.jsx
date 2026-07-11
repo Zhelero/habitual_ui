@@ -3,10 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import { api } from "./api";
 import { useAuth } from "./hooks/useAuth.js";
 import { useHabits } from "./hooks/useHabits";
+import { useHabitActions } from "./hooks/useHabitActions.jsx";
 import { sortHabits } from "./utils/sortHabits.js";
 import HabitCard from "./components/HabitCard.jsx";
 import HabitForm from "./components/HabitForm.jsx";
+import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
+
 
 export default function HabitualDashboard({ darkMode, setDarkMode }) {
     const { logout } = useAuth();
@@ -67,27 +70,14 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
         return () => clearTimeout(timer);
     }, [successMessage]);
 
-    const handleMarkDone = async (habit) => {
-        setActionError("");
+    const {
+        noteDialogHabit,
 
-        const isDone = habitStats[habit.id]?.last_7_days?.find(
-            (d) => d.date === new Date().toISOString().slice(0, 10) && d.done
-        );
-
-        setActionLoading((prev) => ({ ...prev, [habit.id]: true }));
-        try {
-            if (isDone) {
-                await api(`/habits/${habit.id}/done/`, { method: "DELETE" });
-            } else {
-                await api(`/habits/${habit.id}/done/`, { method: "POST" });
-            }
-            await fetchAll();
-        } catch (e) {
-            setActionError(e.message);
-        } finally {
-            setActionLoading((prev) => ({ ...prev, [habit.id]: false }));
-        }
-    };
+        handleMarkDone,
+        handleMarkUndo,
+        submitCompletion,
+        closeDialog,
+    } = useHabitActions({ fetchAll, setActionLoading, setActionError });
 
     const handleAddHabit = async () => {
         setActionError("");
@@ -531,6 +521,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                                 done={isDoneToday(habit.id)}
                                 isLoading={actionLoading[habit.id]}
                                 onDone={() => handleMarkDone(habit)}
+                                onUndo={() => handleMarkUndo(habit)}
                                 onEdit={() => handleEditHabit(habit)}
                                 onArchive={() => handleArchiveToggle(habit)}
                             />
@@ -538,6 +529,13 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     </div>
                 )}
             </div>
+
+            <CompletionNoteDialog
+                key={noteDialogHabit?.id ?? "closed"}
+                habit={noteDialogHabit}
+                onCancel={closeDialog}
+                onSubmit={submitCompletion}
+            />
         </div>
     );
 }

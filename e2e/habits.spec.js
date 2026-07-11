@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import {createHabitViaUI} from "./helpers.js";
+import {createHabitViaUI, markHabitDoneViaUI} from "./helpers.js";
 
 test.describe("Habits", () => {
     test("creating a habit shows it on the dashboard", async ({ authedPage }) => {
@@ -11,8 +11,7 @@ test.describe("Habits", () => {
     test("marking a habit done toggles its state", async ({ authedPage }) => {
         await createHabitViaUI(authedPage, "Drink water");
 
-        const doneButton = authedPage.getByRole("button", { name: "Mark done" });
-        await doneButton.click();
+        await markHabitDoneViaUI(authedPage)
 
         await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
         await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("1");
@@ -23,6 +22,15 @@ test.describe("Habits", () => {
         await expect(authedPage.getByRole("button", { name: "Mark done" })).toBeVisible();
         await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("0");
         await expect(authedPage.getByTestId("dashboard-best-streak-amount")).toHaveText("0");
+    });
+
+    test("marking a habit done with a note completes the flow", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Journal");
+
+        await markHabitDoneViaUI(authedPage, "Felt great today");
+
+        await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("1");
     });
 
     test("archiving a habit moves it to the Archived tab, and it can be restored", async ({
@@ -78,7 +86,7 @@ test.describe("Habits", () => {
     test("selected theme is preserved after refresh", async ({ authedPage }) => {
         await createHabitViaUI(authedPage, "Create theme");
 
-        await authedPage.getByRole("button", { name: "Mark done" }).click();
+        await markHabitDoneViaUI(authedPage)
 
         await authedPage.reload()
 

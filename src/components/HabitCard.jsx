@@ -34,12 +34,12 @@ export default function HabitCard({
                                       done,
                                       isLoading,
                                       onDone,
+                                      onUndo,
                                       onEdit,
                                       onArchive,
                                   }) {
     return (
         <div
-            key={habit.id}
             className="
                 flex items-center justify-between
                 rounded-3xl
@@ -86,7 +86,7 @@ export default function HabitCard({
                 <WeekStrip days={stats?.last_7_days} />
 
                 <button
-                    onClick={onDone}
+                    onClick={done? onUndo : onDone}
                     data-testid="habit-button-done"
                     disabled={isLoading || habit.is_archived}
                     className={`rounded-2xl w-28 text-center py-2 text-sm font-medium transition disabled:opacity-50 ${
