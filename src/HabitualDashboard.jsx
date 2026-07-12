@@ -50,7 +50,6 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
     const [actionError, setActionError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
-
     const {
         habits,
         dashboard,
