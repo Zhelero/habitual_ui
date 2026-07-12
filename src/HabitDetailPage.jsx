@@ -124,14 +124,14 @@ export default function HabitDetailPage() {
                 <NotificationBanner
                     type="error"
                     message={actionError}
-                    testId="dashboard-error-message"
+                    testId="action-error-message"
                     onClose={() => setActionError("")}
                 />
 
                 <NotificationBanner
                     type="success"
                     message={successMessage}
-                    testId="dashboard-success-message"
+                    testId="action-success-message"
                     onClose={() => setSuccessMessage("")}
                 />
 

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function NotificationBanner({
                                                type,
@@ -7,17 +7,22 @@ export default function NotificationBanner({
                                                testId,
                                                duration = 5000,
                                            }) {
+    const onCloseRef = useRef(onClose);
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    });
+
     useEffect(() => {
         if (type !== "success") return;
         if (!message) return;
 
-        const timer = setTimeout(onClose, duration);
+        const timer = setTimeout(onCloseRef.current(), duration);
 
         return () => clearTimeout(timer);
-    }, [type, message, duration, onClose]);
+    }, [type, message, duration]);
 
     if (!message) return null;
-    
+
     const styles =
         type === "error"
             ? {
