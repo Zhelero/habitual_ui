@@ -78,6 +78,14 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
 
     } = useHabitActions({ fetchAll, setActionError, setSuccessMessage });
 
+    const resetHabitForm = (shouldOpen = false) => {
+        setNewHabitName("");
+        setNewHabitDesc("");
+        setNewHabitColor(null);
+        setEditingHabit(null);
+        setAddingHabit(shouldOpen);
+    }
+
     const handleAddHabit = async () => {
         setActionError("");
 
@@ -105,11 +113,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                 });
                 setSuccessMessage("Habit created");
             }
-            setNewHabitName("");
-            setNewHabitDesc("");
-            setNewHabitColor(null);
-            setAddingHabit(false);
-            setEditingHabit(null);
+            resetHabitForm();
             await fetchAll();
         } catch (e) {
             setActionError(e.message);
@@ -130,11 +134,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
     };
 
     const openAddHabitForm = () => {
-        setEditingHabit(null);
-        setNewHabitName("");
-        setNewHabitDesc("");
-        setNewHabitColor(null);
-        setAddingHabit(true);
+        resetHabitForm(true);
     };
 
     const isDoneToday = (habitId) => {
@@ -242,13 +242,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                         newHabitColor={newHabitColor}
                         setNewHabitColor={setNewHabitColor}
                         onSubmit={handleAddHabit}
-                        onCancel={() => {
-                            setAddingHabit(false);
-                            setNewHabitName("");
-                            setNewHabitDesc("");
-                            setNewHabitColor(null);
-                            setEditingHabit(null);
-                        }}
+                        onCancel={() => resetHabitForm()}
                         submitting={submitting}
                     />
                 )}
