@@ -11,6 +11,7 @@ import HabitForm from "./components/HabitForm.jsx";
 import DashboardHeader from "./components/DashboardHeader.jsx";
 import NotificationBanner from "./components/NotificationBanner.jsx";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
+import DashboardStats from "./components/DashboardStats.jsx";
 
 
 export default function HabitualDashboard({ darkMode, setDarkMode }) {
@@ -240,26 +241,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     onClose={() => setSuccessMessage("")}
                 />
 
-                {/* Dashboard stats */}
-                {dashboard && (
-                    <div className="mb-6 grid grid-cols-3 gap-4">
-                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Total habits</p>
-                            <p data-testid="dashboard-total-habits-amount" className="mt-2 text-2xl font-semibold">{dashboard.total_habits}</p>
-                        </div>
-                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Completed today</p>
-                            <p data-testid="dashboard-completed-today-amount" className="mt-2 text-2xl font-semibold">{dashboard.completed_today}</p>
-                        </div>
-                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Best streak</p>
-                            <p data-testid="dashboard-best-streak-amount" className="mt-2 text-2xl font-semibold">
-                                {dashboard.best_streak}
-                                {dashboard.best_streak > 0 && " 🔥"}
-                            </p>
-                        </div>
-                    </div>
-                )}
+                <DashboardStats dashboard={dashboard} />
 
                 {/* Filter + Sorting */}
                 <div className="mb-6 flex items-center justify-between gap-2">
