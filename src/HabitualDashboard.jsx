@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "./api";
 import { useAuth } from "./hooks/useAuth.js";
 import { useHabits } from "./hooks/useHabits";
-import { useHabitActions } from "./hooks/useHabitActions.jsx";
+import { useHabitActions } from "./hooks/useHabitActions.js";
 import { sortHabits } from "./utils/sortHabits.js";
 import HabitCard from "./components/HabitCard.jsx";
 import HabitForm from "./components/HabitForm.jsx";
+import NotificationBanner from "./components/NotificationBanner.jsx";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 
@@ -41,7 +42,6 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
     const [newHabitColor, setNewHabitColor] = useState(null);
     const [editingHabit, setEditingHabit] = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const [actionLoading, setActionLoading] = useState({});
     const [actionError, setActionError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
@@ -60,24 +60,18 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
         fetchAll,
     } = useHabits(archiveFilter);
 
-    useEffect(() => {
-        if (!successMessage) return;
-
-        const timer = setTimeout(() => {
-            setSuccessMessage("");
-        }, 5000);
-
-        return () => clearTimeout(timer);
-    }, [successMessage]);
-
     const {
-        noteDialogHabit,
-
         handleMarkDone,
         handleMarkUndo,
         submitCompletion,
+
+        toggleArchive,
+
+        actionLoading,
+        noteDialogHabit,
         closeDialog,
-    } = useHabitActions({ fetchAll, setActionLoading, setActionError });
+
+    } = useHabitActions({ fetchAll, setActionError, setSuccessMessage });
 
     const handleAddHabit = async () => {
         setActionError("");
@@ -128,46 +122,6 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
         setNewHabitColor(habit.color);
 
         setAddingHabit(true);
-    };
-
-    const handleArchiveHabit = async (habitId) => {
-        setActionError("");
-
-        if (!confirm("Archive this habit?")) return;
-        setActionLoading((prev) => ({ ...prev, [habitId]: true }));
-        try {
-            await api(`/habits/${habitId}/archive/`, { method: "PATCH" });
-            await fetchAll();
-            setSuccessMessage("Habit archived");
-        } catch (e) {
-            setActionError(e.message);
-        } finally {
-            setActionLoading((prev) => ({ ...prev, [habitId]: false }));
-        }
-    };
-
-    const handleRestoreHabit = async (habitId) => {
-        setActionError("");
-
-        if (!confirm("Restore this habit?")) return;
-        setActionLoading((prev) => ({ ...prev, [habitId]: true }));
-        try {
-            await api(`/habits/${habitId}/restore/`, { method: "PATCH" });
-            await fetchAll();
-            setSuccessMessage("Habit restored");
-        } catch (e) {
-            setActionError(e.message);
-        } finally {
-            setActionLoading((prev) => ({ ...prev, [habitId]: false }));
-        }
-    };
-
-    const handleArchiveToggle = async (habit) => {
-        if (habit.is_archived) {
-            await handleRestoreHabit(habit.id);
-        } else {
-            await handleArchiveHabit(habit.id);
-        }
     };
 
     const isDoneToday = (habitId) => {
@@ -323,61 +277,19 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     </div>
                 )}
 
-                {/* Error */}
-                {actionError && (
-                    <div className="
-                        mb-6
-                        rounded-xl
-                        border
-                        border-red-300
-                        bg-red-50
-                        px-4
-                        py-3
-                        dark:bg-red-950
-                        dark:border-red-800
-                    ">
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm text-red-600" data-testid="dashboard-error-message">
-                                {actionError}
-                            </p>
+                <NotificationBanner
+                    type="error"
+                    message={actionError}
+                    testId="dashboard-error-message"
+                    onClose={() => setActionError("")}
+                />
 
-                            <button
-                                onClick={() => setActionError("")}
-                                className="text-red-400 hover:text-red-600"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Success message */}
-                {successMessage && (
-                    <div className="
-                        mb-6
-                        rounded-xl
-                        border
-                        border-emerald-300
-                        bg-emerald-50
-                        px-4
-                        py-3
-                        dark:bg-emerald-950
-                        dark:border-emerald-800
-                    ">
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm text-emerald-700" data-testid="dashboard-success-message">
-                                {successMessage}
-                            </p>
-
-                            <button
-                                onClick={() => setSuccessMessage("")}
-                                className="text-emerald-500 hover:text-emerald-700"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <NotificationBanner
+                    type="success"
+                    message={successMessage}
+                    testId="dashboard-success-message"
+                    onClose={() => setSuccessMessage("")}
+                />
 
                 {/* Dashboard stats */}
                 {dashboard && (
@@ -523,19 +435,19 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                                 onDone={() => handleMarkDone(habit)}
                                 onUndo={() => handleMarkUndo(habit)}
                                 onEdit={() => handleEditHabit(habit)}
-                                onArchive={() => handleArchiveToggle(habit)}
+                                onArchive={() => toggleArchive(habit)}
                             />
                         ))}
                     </div>
                 )}
-            </div>
 
-            <CompletionNoteDialog
-                key={noteDialogHabit?.id ?? "closed"}
-                habit={noteDialogHabit}
-                onCancel={closeDialog}
-                onSubmit={submitCompletion}
-            />
+                <CompletionNoteDialog
+                    key={noteDialogHabit?.id ?? "closed"}
+                    habit={noteDialogHabit}
+                    onCancel={closeDialog}
+                    onSubmit={submitCompletion}
+                />
+            </div>
         </div>
     );
 }
