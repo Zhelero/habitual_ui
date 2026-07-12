@@ -6,14 +6,13 @@ import { useAuth } from "./hooks/useAuth.js";
 import { useHabits } from "./hooks/useHabits";
 import { useHabitActions } from "./hooks/useHabitActions.js";
 import { sortHabits } from "./utils/sortHabits.js";
-import HabitCard from "./components/HabitCard.jsx";
 import HabitForm from "./components/HabitForm.jsx";
+import HabitsList from "./components/HabitsList.jsx";
 import DashboardHeader from "./components/DashboardHeader.jsx";
 import DashboardStats from "./components/DashboardStats.jsx";
 import DashboardToolbar from "./components/DashboardToolbar.jsx";
 import NotificationBanner from "./components/NotificationBanner.jsx";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
-
 
 
 export default function HabitualDashboard({ darkMode, setDarkMode }) {
@@ -275,32 +274,17 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     />
                 )}
 
-                {/* Habits list */}
-                {habits.length === 0 ? (
-                    <div className="rounded-3xl bg-white p-10 text-center shadow-sm dark:bg-slate-800">
-                        <p className="text-slate-500">
-                            {archiveFilter === "archived"
-                                ? "No habits here yet."
-                                : "No habits yet. Add your first one."}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {sortedHabits.map((habit) => (
-                            <HabitCard
-                                key={habit.id}
-                                habit={habit}
-                                stats={habitStats[habit.id]}
-                                done={isDoneToday(habit.id)}
-                                isLoading={actionLoading[habit.id]}
-                                onDone={() => handleMarkDone(habit)}
-                                onUndo={() => handleMarkUndo(habit)}
-                                onEdit={() => handleEditHabit(habit)}
-                                onArchive={() => toggleArchive(habit)}
-                            />
-                        ))}
-                    </div>
-                )}
+                <HabitsList
+                    habits={sortedHabits}
+                    archiveFilter={archiveFilter}
+                    habitStats={habitStats}
+                    actionLoading={actionLoading}
+                    isDoneToday={isDoneToday}
+                    onDone={handleMarkDone}
+                    onUndo={handleMarkUndo}
+                    onEdit={handleEditHabit}
+                    onArchive={toggleArchive}
+                />
 
                 <CompletionNoteDialog
                     key={noteDialogHabit?.id ?? "closed"}
