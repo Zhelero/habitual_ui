@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "./api";
+
 import { useAuth } from "./hooks/useAuth.js";
 import { useHabits } from "./hooks/useHabits";
 import { useHabitActions } from "./hooks/useHabitActions.js";
 import { sortHabits } from "./utils/sortHabits.js";
 import HabitCard from "./components/HabitCard.jsx";
 import HabitForm from "./components/HabitForm.jsx";
+import DashboardHeader from "./components/DashboardHeader.jsx";
 import NotificationBanner from "./components/NotificationBanner.jsx";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
-import ThemeToggle from "./components/ThemeToggle.jsx";
 
 
 export default function HabitualDashboard({ darkMode, setDarkMode }) {
@@ -124,6 +125,14 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
         setAddingHabit(true);
     };
 
+    const openAddHabitForm = () => {
+        setEditingHabit(null);
+        setNewHabitName("");
+        setNewHabitDesc("");
+        setNewHabitColor(null);
+        setAddingHabit(true);
+    };
+
     const isDoneToday = (habitId) => {
         const today = new Date().toISOString().slice(0, 10);
         return habitStats[habitId]?.last_7_days?.some(
@@ -203,73 +212,13 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
             "
         >
             <div className="mx-auto max-w-3xl">
-                {/* Header */}
-                <header className="mb-8 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-400">
-                            Habitual
-                        </h1>
-
-                        <p className="mt-1 text-slate-500 dark:text-slate-400">
-                            Track habits. Keep your streak going.
-                        </p>
-
-                        <p className="text-sm text-slate-400 dark:text-slate-500">
-                            Signed in as <span className="font-medium">{user?.email}</span>
-                        </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => {
-                                setEditingHabit(null);
-                                setNewHabitName("");
-                                setNewHabitDesc("");
-                                setNewHabitColor(null);
-                                setAddingHabit(true);
-                            }}
-                            className="
-                            rounded-2xl
-                            bg-slate-900
-                            px-4
-                            py-2
-                            text-sm
-                            text-white
-                            shadow-sm
-                            hover:bg-slate-800
-
-                            dark:bg-slate-800
-                            dark:text-slate-200"
-                        >
-                            + Add habit
-                        </button>
-
-                        <button
-                            onClick={handleLogout}
-                            className="
-                                rounded-2xl
-                                bg-slate-200
-                                px-4
-                                py-2
-                                text-sm
-                                text-slate-700
-                                hover:bg-slate-300
-
-                                dark:text-slate-200
-                                dark:bg-slate-600
-                            "
-                        >
-                            Logout
-                        </button>
-                    </div>
-
-                    <div className="flex">
-                        <ThemeToggle
-                            darkMode={darkMode}
-                            setDarkMode={setDarkMode}
-                        />
-                    </div>
-                </header>
+                <DashboardHeader
+                    user={user}
+                    darkMode={darkMode}
+                    setDarkMode={setDarkMode}
+                    onAddHabit={openAddHabitForm}
+                    onLogout={handleLogout}
+                />
 
                 {refreshing && (
                     <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
