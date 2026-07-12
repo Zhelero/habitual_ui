@@ -8,6 +8,8 @@ import { useHabitActions } from "./hooks/useHabitActions.js";
 import { sortHabits } from "./utils/sortHabits.js";
 import HabitForm from "./components/HabitForm.jsx";
 import HabitsList from "./components/HabitsList.jsx";
+import ErrorScreen from "./components/ErrorScreen.jsx";
+import LoadingScreen from "./components/LoadingScreen.jsx";
 import DashboardHeader from "./components/DashboardHeader.jsx";
 import DashboardStats from "./components/DashboardStats.jsx";
 import DashboardToolbar from "./components/DashboardToolbar.jsx";
@@ -166,40 +168,17 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
     };
 
     if (loading) {
-        return (
-            <div
-                className="
-                    flex
-                    min-h-screen
-                    items-center
-                    justify-center
-                    bg-slate-50
-
-                    dark:bg-slate-900
-                    dark:text-slate-100
-                "
-            >
-                <p className="text-slate-500">Loading...</p>
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
     if (error) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
-                <div className="rounded-2xl bg-white p-8 shadow-sm text-center dark:bg-slate-800">
-                    <p className="text-red-500 font-medium">Error: {error}</p>
-                    <p className="mt-2 text-sm text-slate-500">
-                        Make sure your API is running and TOKEN is set correctly.
-                    </p>
-                    <button
-                        onClick={fetchAll}
-                        className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
+            <ErrorScreen
+                message={`Error: ${error}`}
+                hint="Make sure your API is running and TOKEN is set correctly."
+                actionLabel="Retry"
+                onAction={fetchAll}
+            />
         );
     }
 

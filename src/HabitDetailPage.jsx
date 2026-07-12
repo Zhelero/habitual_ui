@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "./api";
 
 import { useHabit } from "./hooks/useHabit";
@@ -9,6 +9,8 @@ import Heatmap from "./components/Heatmap";
 import HabitForm from "./components/HabitForm";
 import NotificationBanner from "./components/NotificationBanner";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
+import LoadingScreen from "./components/LoadingScreen.jsx";
+import ErrorScreen from "./components/ErrorScreen.jsx";
 
 function StatCard({ label, value }) {
     return (
@@ -82,28 +84,16 @@ export default function HabitDetailPage() {
     );
 
     if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
-                <p className="text-slate-500">Loading...</p>
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
-    if (error || !habit) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
-                <div className="rounded-2xl bg-white p-8 shadow-sm text-center dark:bg-slate-800">
-                    <p className="text-red-500 font-medium">{error || "Habit not found"}</p>
-                    <Link
-                        to="/"
-                        className="mt-4 inline-block rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
-                    >
-                        Back to dashboard
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    if (error || !habit) return (
+        <ErrorScreen
+            message={error || "Habit not found"}
+            actionLabel="Back to dashboard"
+            actionHref="/"
+        />
+    )
 
     return (
         <div className="min-h-screen bg-slate-50 p-8 dark:bg-slate-900 dark:text-slate-100">
