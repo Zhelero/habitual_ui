@@ -69,7 +69,7 @@ test.describe("Habits", () => {
         await createHabitViaUI(authedPage, "Some action");
         await createHabitViaUI(authedPage, "Some action");
 
-        await expect(authedPage.getByTestId("dashboard-error-message")).toHaveText("Habit already exists");
+        await expect(authedPage.getByTestId("action-error-message")).toHaveText("Habit already exists");
         await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
     })
 

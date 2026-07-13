@@ -1,14 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "./api";
+
 import { useAuth } from "./hooks/useAuth.js";
 import { useHabits } from "./hooks/useHabits";
-import { useHabitActions } from "./hooks/useHabitActions.jsx";
+import { useHabitActions } from "./hooks/useHabitActions.js";
 import { sortHabits } from "./utils/sortHabits.js";
-import HabitCard from "./components/HabitCard.jsx";
 import HabitForm from "./components/HabitForm.jsx";
+import HabitsList from "./components/HabitsList.jsx";
+import ErrorScreen from "./components/ErrorScreen.jsx";
+import LoadingScreen from "./components/LoadingScreen.jsx";
+import DashboardHeader from "./components/DashboardHeader.jsx";
+import DashboardStats from "./components/DashboardStats.jsx";
+import DashboardToolbar from "./components/DashboardToolbar.jsx";
+import NotificationBanner from "./components/NotificationBanner.jsx";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
-import ThemeToggle from "./components/ThemeToggle.jsx";
 
 
 export default function HabitualDashboard({ darkMode, setDarkMode }) {
@@ -41,10 +47,8 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
     const [newHabitColor, setNewHabitColor] = useState(null);
     const [editingHabit, setEditingHabit] = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const [actionLoading, setActionLoading] = useState({});
     const [actionError, setActionError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
-
 
     const {
         habits,
@@ -60,24 +64,26 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
         fetchAll,
     } = useHabits(archiveFilter);
 
-    useEffect(() => {
-        if (!successMessage) return;
-
-        const timer = setTimeout(() => {
-            setSuccessMessage("");
-        }, 5000);
-
-        return () => clearTimeout(timer);
-    }, [successMessage]);
-
     const {
-        noteDialogHabit,
-
         handleMarkDone,
         handleMarkUndo,
         submitCompletion,
+
+        toggleArchive,
+
+        actionLoading,
+        noteDialogHabit,
         closeDialog,
-    } = useHabitActions({ fetchAll, setActionLoading, setActionError });
+
+    } = useHabitActions({ fetchAll, setActionError, setSuccessMessage });
+
+    const resetHabitForm = (shouldOpen = false) => {
+        setNewHabitName("");
+        setNewHabitDesc("");
+        setNewHabitColor(null);
+        setEditingHabit(null);
+        setAddingHabit(shouldOpen);
+    }
 
     const handleAddHabit = async () => {
         setActionError("");
@@ -106,11 +112,7 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                 });
                 setSuccessMessage("Habit created");
             }
-            setNewHabitName("");
-            setNewHabitDesc("");
-            setNewHabitColor(null);
-            setAddingHabit(false);
-            setEditingHabit(null);
+            resetHabitForm();
             await fetchAll();
         } catch (e) {
             setActionError(e.message);
@@ -130,44 +132,8 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
         setAddingHabit(true);
     };
 
-    const handleArchiveHabit = async (habitId) => {
-        setActionError("");
-
-        if (!confirm("Archive this habit?")) return;
-        setActionLoading((prev) => ({ ...prev, [habitId]: true }));
-        try {
-            await api(`/habits/${habitId}/archive/`, { method: "PATCH" });
-            await fetchAll();
-            setSuccessMessage("Habit archived");
-        } catch (e) {
-            setActionError(e.message);
-        } finally {
-            setActionLoading((prev) => ({ ...prev, [habitId]: false }));
-        }
-    };
-
-    const handleRestoreHabit = async (habitId) => {
-        setActionError("");
-
-        if (!confirm("Restore this habit?")) return;
-        setActionLoading((prev) => ({ ...prev, [habitId]: true }));
-        try {
-            await api(`/habits/${habitId}/restore/`, { method: "PATCH" });
-            await fetchAll();
-            setSuccessMessage("Habit restored");
-        } catch (e) {
-            setActionError(e.message);
-        } finally {
-            setActionLoading((prev) => ({ ...prev, [habitId]: false }));
-        }
-    };
-
-    const handleArchiveToggle = async (habit) => {
-        if (habit.is_archived) {
-            await handleRestoreHabit(habit.id);
-        } else {
-            await handleArchiveHabit(habit.id);
-        }
+    const openAddHabitForm = () => {
+        resetHabitForm(true);
     };
 
     const isDoneToday = (habitId) => {
@@ -201,40 +167,17 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
     };
 
     if (loading) {
-        return (
-            <div
-                className="
-                    flex
-                    min-h-screen
-                    items-center
-                    justify-center
-                    bg-slate-50
-
-                    dark:bg-slate-900
-                    dark:text-slate-100
-                "
-            >
-                <p className="text-slate-500">Loading...</p>
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
     if (error) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
-                <div className="rounded-2xl bg-white p-8 shadow-sm text-center dark:bg-slate-800">
-                    <p className="text-red-500 font-medium">Error: {error}</p>
-                    <p className="mt-2 text-sm text-slate-500">
-                        Make sure your API is running and TOKEN is set correctly.
-                    </p>
-                    <button
-                        onClick={fetchAll}
-                        className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
+            <ErrorScreen
+                message={`Error: ${error}`}
+                hint="Make sure your API is running and TOKEN is set correctly."
+                actionLabel="Retry"
+                onAction={fetchAll}
+            />
         );
     }
 
@@ -249,73 +192,13 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
             "
         >
             <div className="mx-auto max-w-3xl">
-                {/* Header */}
-                <header className="mb-8 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-400">
-                            Habitual
-                        </h1>
-
-                        <p className="mt-1 text-slate-500 dark:text-slate-400">
-                            Track habits. Keep your streak going.
-                        </p>
-
-                        <p className="text-sm text-slate-400 dark:text-slate-500">
-                            Signed in as <span className="font-medium">{user?.email}</span>
-                        </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => {
-                                setEditingHabit(null);
-                                setNewHabitName("");
-                                setNewHabitDesc("");
-                                setNewHabitColor(null);
-                                setAddingHabit(true);
-                            }}
-                            className="
-                            rounded-2xl
-                            bg-slate-900
-                            px-4
-                            py-2
-                            text-sm
-                            text-white
-                            shadow-sm
-                            hover:bg-slate-800
-
-                            dark:bg-slate-800
-                            dark:text-slate-200"
-                        >
-                            + Add habit
-                        </button>
-
-                        <button
-                            onClick={handleLogout}
-                            className="
-                                rounded-2xl
-                                bg-slate-200
-                                px-4
-                                py-2
-                                text-sm
-                                text-slate-700
-                                hover:bg-slate-300
-
-                                dark:text-slate-200
-                                dark:bg-slate-600
-                            "
-                        >
-                            Logout
-                        </button>
-                    </div>
-
-                    <div className="flex">
-                        <ThemeToggle
-                            darkMode={darkMode}
-                            setDarkMode={setDarkMode}
-                        />
-                    </div>
-                </header>
+                <DashboardHeader
+                    user={user}
+                    darkMode={darkMode}
+                    setDarkMode={setDarkMode}
+                    onAddHabit={openAddHabitForm}
+                    onLogout={handleLogout}
+                />
 
                 {refreshing && (
                     <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
@@ -323,162 +206,29 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     </div>
                 )}
 
-                {/* Error */}
-                {actionError && (
-                    <div className="
-                        mb-6
-                        rounded-xl
-                        border
-                        border-red-300
-                        bg-red-50
-                        px-4
-                        py-3
-                        dark:bg-red-950
-                        dark:border-red-800
-                    ">
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm text-red-600" data-testid="dashboard-error-message">
-                                {actionError}
-                            </p>
+                <NotificationBanner
+                    type="error"
+                    message={actionError}
+                    testId="action-error-message"
+                    onClose={() => setActionError("")}
+                />
 
-                            <button
-                                onClick={() => setActionError("")}
-                                className="text-red-400 hover:text-red-600"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <NotificationBanner
+                    type="success"
+                    message={successMessage}
+                    testId="action-success-message"
+                    onClose={() => setSuccessMessage("")}
+                />
 
-                {/* Success message */}
-                {successMessage && (
-                    <div className="
-                        mb-6
-                        rounded-xl
-                        border
-                        border-emerald-300
-                        bg-emerald-50
-                        px-4
-                        py-3
-                        dark:bg-emerald-950
-                        dark:border-emerald-800
-                    ">
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm text-emerald-700" data-testid="dashboard-success-message">
-                                {successMessage}
-                            </p>
+                <DashboardStats dashboard={dashboard} />
 
-                            <button
-                                onClick={() => setSuccessMessage("")}
-                                className="text-emerald-500 hover:text-emerald-700"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Dashboard stats */}
-                {dashboard && (
-                    <div className="mb-6 grid grid-cols-3 gap-4">
-                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Total habits</p>
-                            <p data-testid="dashboard-total-habits-amount" className="mt-2 text-2xl font-semibold">{dashboard.total_habits}</p>
-                        </div>
-                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Completed today</p>
-                            <p data-testid="dashboard-completed-today-amount" className="mt-2 text-2xl font-semibold">{dashboard.completed_today}</p>
-                        </div>
-                        <div className="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-800">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Best streak</p>
-                            <p data-testid="dashboard-best-streak-amount" className="mt-2 text-2xl font-semibold">
-                                {dashboard.best_streak}
-                                {dashboard.best_streak > 0 && " 🔥"}
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Filter + Sorting */}
-                <div className="mb-6 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
-                        {[
-                            { value: "active", label: "Active" },
-                            { value: "archived", label: "Archived" },
-                            { value: "all", label: "All" },
-                        ].map((option) => (
-                            <button
-                                key={option.value}
-                                onClick={() => setArchiveFilter(option.value)}
-                                disabled={refreshing}
-                                className={`
-                                    rounded-lg
-                                    px-3
-                                    py-1.5
-                                    text-sm
-                                    font-medium
-                                    transition
-
-                                    ${
-                                        archiveFilter === option.value
-                                            ? "bg-slate-900 text-white dark:bg-slate-600"
-                                            : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
-                                    }
-                                `}
-                            >
-                                {option.label}
-                            </button>
-                        ))}
-                    </div>
-
-
-                    <div className="flex items-center gap-2">
-                        <label
-                            htmlFor="sort"
-                            className="text-sm text-slate-500"
-                        >
-                            Sort:
-                        </label>
-
-                        <select
-                            id="sort"
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="
-                                rounded-xl
-                                border
-                                border-slate-200
-                                bg-white
-                                px-3
-                                py-2
-                                text-sm
-                                text-slate-700
-                                outline-none
-                                focus:border-slate-400
-
-                                dark:bg-slate-800
-                                dark:text-slate-200
-                            "
-                        >
-                            <option value="pending">
-                                Pending first
-                            </option>
-
-                            <option value="completed">
-                                Completed first
-                            </option>
-
-                            <option value="streak">
-                                By streak
-                            </option>
-
-                            <option value="alphabet">
-                                Alphabetical
-                            </option>
-                        </select>
-                    </div>
-                </div>
+                <DashboardToolbar
+                    archiveFilter={archiveFilter}
+                    setArchiveFilter={setArchiveFilter}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    refreshing={refreshing}
+                />
 
                 {/* Add habit form */}
                 {addingHabit && (
@@ -491,51 +241,30 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                         newHabitColor={newHabitColor}
                         setNewHabitColor={setNewHabitColor}
                         onSubmit={handleAddHabit}
-                        onCancel={() => {
-                            setAddingHabit(false);
-                            setNewHabitName("");
-                            setNewHabitDesc("");
-                            setNewHabitColor(null);
-                            setEditingHabit(null);
-                        }}
+                        onCancel={() => resetHabitForm()}
                         submitting={submitting}
                     />
                 )}
 
-                {/* Habits list */}
-                {habits.length === 0 ? (
-                    <div className="rounded-3xl bg-white p-10 text-center shadow-sm dark:bg-slate-800">
-                        <p className="text-slate-500">
-                            {archiveFilter === "archived"
-                                ? "No habits here yet."
-                                : "No habits yet. Add your first one."}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {sortedHabits.map((habit) => (
-                            <HabitCard
-                                key={habit.id}
-                                habit={habit}
-                                stats={habitStats[habit.id]}
-                                done={isDoneToday(habit.id)}
-                                isLoading={actionLoading[habit.id]}
-                                onDone={() => handleMarkDone(habit)}
-                                onUndo={() => handleMarkUndo(habit)}
-                                onEdit={() => handleEditHabit(habit)}
-                                onArchive={() => handleArchiveToggle(habit)}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
+                <HabitsList
+                    habits={sortedHabits}
+                    archiveFilter={archiveFilter}
+                    habitStats={habitStats}
+                    actionLoading={actionLoading}
+                    isDoneToday={isDoneToday}
+                    onDone={handleMarkDone}
+                    onUndo={handleMarkUndo}
+                    onEdit={handleEditHabit}
+                    onArchive={toggleArchive}
+                />
 
-            <CompletionNoteDialog
-                key={noteDialogHabit?.id ?? "closed"}
-                habit={noteDialogHabit}
-                onCancel={closeDialog}
-                onSubmit={submitCompletion}
-            />
+                <CompletionNoteDialog
+                    key={noteDialogHabit?.id ?? "closed"}
+                    habit={noteDialogHabit}
+                    onCancel={closeDialog}
+                    onSubmit={submitCompletion}
+                />
+            </div>
         </div>
     );
 }
