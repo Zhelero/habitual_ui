@@ -1,12 +1,27 @@
+import {useEffect, useRef} from "react";
+
 export default function Toast({
                                   type,
                                   message,
                                   onClose,
                                   testId,
                               }) {
-    if (!message) return null;
+    const onCloseRef = useRef(onClose);
 
     const isSuccess = type === 'success';
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    });
+
+    useEffect(() => {
+        if (!isSuccess) return;
+
+        const timer = setTimeout(() => onCloseRef.current(), 3000);
+        return () => clearTimeout(timer);
+    }, [message, isSuccess]);
+
+    if (!message) return null;
 
     return (
         <div className={`
@@ -15,8 +30,9 @@ export default function Toast({
                 justify-between
                 gap-4
 
+                w-80
                 rounded-xl
-                px-10
+                px-4
                 py-3
 
                 shadow-lg
