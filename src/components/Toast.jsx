@@ -37,7 +37,7 @@ export default function Toast({
 
                 shadow-lg
 
-                transition-all
+                animate-toast-in
                 
                 
                 ${
