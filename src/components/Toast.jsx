@@ -4,7 +4,6 @@ export default function Toast({
                                   type,
                                   message,
                                   onClose,
-                                  testId,
                               }) {
     const onCloseRef = useRef(onClose);
 
@@ -47,7 +46,7 @@ export default function Toast({
                 }
             `}
         >
-            <span data-testid={testId}>{message}</span>
+            <span data-testid={`toast-${type}`}>{message}</span>
 
             <button
                 onClick={onClose}

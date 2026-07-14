@@ -69,9 +69,71 @@ test.describe("Habits", () => {
         await createHabitViaUI(authedPage, "Some action");
         await createHabitViaUI(authedPage, "Some action");
 
-        await expect(authedPage.getByTestId("action-error-message")).toHaveText("Habit already exists");
+        await expect(authedPage.getByTestId("toast-error")).toHaveText("Habit already exists");
         await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
     })
+
+    test("API validation errors are shown to the user", async ({ authedPage }) => {
+
+        await authedPage.route("**/habits/", async route => {
+            await route.fulfill({
+                status: 422,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    detail: [
+                        {
+                            loc: ["body", "name"],
+                            msg: "Test validation error",
+                        },
+                    ],
+                }),
+            });
+        });
+
+        await authedPage.getByRole("button", { name: "+ Add habit" }).click();
+        await authedPage.getByPlaceholder("Habit name").fill("My habit");
+        await authedPage.getByRole("button", { name: "Create" }).click();
+
+        await expect(
+            authedPage.getByTestId("toast-error")
+        ).toHaveText("name: Test validation error");
+    })
+
+    test("validation errors are shown when marking a habit done fails", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Journal");
+
+        await authedPage.route("**/habits/*/done/", async (route) => {
+            if (route.request().method() !== "POST") {
+                return route.continue();
+            }
+
+            await route.fulfill({
+                status: 422,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    detail: [
+                        {
+                            loc: ["body", "extra_field"],
+                            msg: "Extra inputs are not permitted",
+                        },
+                    ],
+                }),
+            });
+        });
+
+        const note = "Write some notes"
+        await markHabitDoneViaUI(authedPage, note);
+
+        await expect(
+            authedPage.getByTestId("toast-error")
+        ).toHaveText("extra_field: Extra inputs are not permitted");
+
+        // The dialog should stay open on error, so the user can fix the note
+        // and retry instead of losing what they typed.
+        await expect(
+            authedPage.getByPlaceholder("Add a note...")
+        ).toHaveValue(note);
+    });
 
     test("page refresh doesn't affect theme", async ({ authedPage }) => {
         await authedPage.getByTestId("theme-toggle").click();

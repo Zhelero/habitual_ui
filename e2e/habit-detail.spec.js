@@ -87,5 +87,85 @@ test.describe("Habit detail page", () => {
         await expect(authedPage.getByText("No habits yet. Add your first one.")).toBeVisible();
     })
 
+    test("API validation errors are shown when editing a habit fails", async ({
+                                                                                  authedPage,
+                                                                              }) => {
+        await createHabitViaUI(authedPage, "Old name");
+
+        await authedPage.getByRole("heading", { name: "Old name" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        await authedPage.route("**/habits/*/", async (route) => {
+            if (route.request().method() !== "PATCH") {
+                    return route.continue();
+            }
+
+            await route.fulfill({
+                status: 422,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    detail: [
+                        {
+                            loc: ["body", "name"],
+                            msg: "Test validation error",
+                        },
+                    ],
+                }),
+            });
+        });
+
+        await authedPage.getByRole("button", { name: "Edit" }).click();
+        await authedPage.getByPlaceholder("Habit name").fill("New name");
+        await authedPage.getByRole("button", { name: "Update" }).click();
+
+        await expect(
+            authedPage.getByTestId("toast-error")
+        ).toHaveText("name: Test validation error");
+
+        // The form should stay open on error, so the user can fix the name
+        // and retry instead of losing what they typed.
+        await expect(
+            authedPage.getByPlaceholder("Habit name")
+        ).toHaveValue("New name");
+    });
+
+    test("validation errors are shown when marking a habit done fails from the detail page", async ({
+                                                                                                        authedPage,
+                                                                                                    }) => {
+        await createHabitViaUI(authedPage, "Journal");
+
+        await authedPage.getByRole("heading", { name: "Journal" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        await authedPage.route("**/habits/*/done/", async (route) => {
+            if (route.request().method() !== "POST") {
+                return route.continue();
+            }
+
+            await route.fulfill({
+                status: 422,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    detail: [
+                        {
+                            loc: ["body", "extra_field"],
+                            msg: "Extra inputs are not permitted",
+                        },
+                    ],
+                }),
+            });
+        });
+
+        const note = "Draw a picture"
+        await markHabitDoneViaUI(authedPage, note);
+
+        await expect(
+            authedPage.getByTestId("toast-error")
+        ).toHaveText("extra_field: Extra inputs are not permitted");
+
+        await expect(
+            authedPage.getByPlaceholder("Add a note...")
+        ).toHaveValue(note);
+    });
 
 });
