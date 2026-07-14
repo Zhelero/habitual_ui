@@ -19,6 +19,14 @@ export default defineConfig({
         trace: "on-first-retry",
     },
 
+    // CI runners are slower/shared, so give assertions more headroom than
+    // the 5s default — habit creation and mark-done both involve a POST
+    // followed by a full dashboard refetch, which can exceed 5s under load
+    // even though it's fast locally.
+    expect: {
+        timeout: process.env.CI ? 10_000 : 5_000,
+    },
+
     projects: [
         {
             name: "chromium",
