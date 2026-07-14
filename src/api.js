@@ -1,3 +1,5 @@
+import {getApiErrorMessage} from "./utils/apiErrors.js";
+
 export const API_BASE = "http://localhost:8000";
 
 let isRefreshing = false;
@@ -19,6 +21,13 @@ export async function api(path, options = {}) {
     if (response.status === 401 && !isRefreshing) {
         isRefreshing = true;
 
+        const failRefresh = () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            window.location.reload();
+            throw new Error("Session expired");
+        };
+
         try {
             const refreshToken =
                 localStorage.getItem("refreshToken");
@@ -36,9 +45,7 @@ export async function api(path, options = {}) {
                 }
             );
 
-            if (!refreshResponse.ok) {
-                throw new Error("Refresh failed");
-            }
+            if (!refreshResponse.ok) failRefresh();
 
             const refreshData =
                 await refreshResponse.json();
@@ -68,12 +75,7 @@ export async function api(path, options = {}) {
                 }
             );
         } catch {
-            localStorage.removeItem("token");
-            localStorage.removeItem("refreshToken");
-
-            window.location.reload();
-
-            throw new Error("Session expired");
+            failRefresh();
         } finally {
             isRefreshing = false;
         }
@@ -84,7 +86,7 @@ export async function api(path, options = {}) {
             await response.json().catch(() => ({}));
 
         throw new Error(
-            error.detail || `HTTP ${response.status}`
+            getApiErrorMessage(error, response.status)
         );
     }
 
