@@ -13,8 +13,9 @@ import LoadingScreen from "./components/LoadingScreen.jsx";
 import DashboardHeader from "./components/DashboardHeader.jsx";
 import DashboardStats from "./components/DashboardStats.jsx";
 import DashboardToolbar from "./components/DashboardToolbar.jsx";
-import NotificationBanner from "./components/NotificationBanner.jsx";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
+import ToastContainer from "./components/ToastContainer.jsx";
+import Toast from "./components/Toast.jsx";
 
 
 export default function HabitualDashboard({ darkMode, setDarkMode }) {
@@ -206,19 +207,21 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     </div>
                 )}
 
-                <NotificationBanner
-                    type="error"
-                    message={actionError}
-                    testId="action-error-message"
-                    onClose={() => setActionError("")}
-                />
+                <ToastContainer>
+                    <Toast
+                        type="error"
+                        message={actionError}
+                        testId="action-error-message"
+                        onClose={() => setActionError("")}
+                    />
 
-                <NotificationBanner
-                    type="success"
-                    message={successMessage}
-                    testId="action-success-message"
-                    onClose={() => setSuccessMessage("")}
-                />
+                    <Toast
+                        type="success"
+                        message={successMessage}
+                        testId="action-success-message"
+                        onClose={() => setSuccessMessage("")}
+                    />
+                </ToastContainer>
 
                 <DashboardStats dashboard={dashboard} />
 

@@ -7,10 +7,11 @@ import { useHabitActions } from "./hooks/useHabitActions.js"
 import { habitColorClass } from "./utils/habitColors";
 import Heatmap from "./components/Heatmap";
 import HabitForm from "./components/HabitForm";
-import NotificationBanner from "./components/NotificationBanner";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
 import ErrorScreen from "./components/ErrorScreen.jsx";
+import ToastContainer from "./components/ToastContainer.jsx";
+import Toast from "./components/Toast.jsx";
 
 function StatCard({ label, value }) {
     return (
@@ -111,19 +112,21 @@ export default function HabitDetailPage() {
                     </div>
                 )}
 
-                <NotificationBanner
-                    type="error"
-                    message={actionError}
-                    testId="action-error-message"
-                    onClose={() => setActionError("")}
-                />
+                <ToastContainer>
+                    <Toast
+                        type="error"
+                        message={actionError}
+                        testId="action-error-message"
+                        onClose={() => setActionError("")}
+                    />
 
-                <NotificationBanner
-                    type="success"
-                    message={successMessage}
-                    testId="action-success-message"
-                    onClose={() => setSuccessMessage("")}
-                />
+                    <Toast
+                        type="success"
+                        message={successMessage}
+                        testId="action-success-message"
+                        onClose={() => setSuccessMessage("")}
+                    />
+                </ToastContainer>
 
                 <div className="rounded-3xl bg-white p-6 shadow-sm dark:bg-slate-800">
                     {editing ? (
