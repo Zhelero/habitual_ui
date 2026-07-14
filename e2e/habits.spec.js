@@ -121,7 +121,8 @@ test.describe("Habits", () => {
             });
         });
 
-        await markHabitDoneViaUI(authedPage);
+        const note = "Write some notes"
+        await markHabitDoneViaUI(authedPage, note);
 
         await expect(
             authedPage.getByTestId("toast-error")
@@ -131,7 +132,7 @@ test.describe("Habits", () => {
         // and retry instead of losing what they typed.
         await expect(
             authedPage.getByPlaceholder("Add a note...")
-        ).toBeVisible();
+        ).toHaveValue(note);
     });
 
     test("page refresh doesn't affect theme", async ({ authedPage }) => {

@@ -156,7 +156,8 @@ test.describe("Habit detail page", () => {
             });
         });
 
-        await markHabitDoneViaUI(authedPage);
+        const note = "Draw a picture"
+        await markHabitDoneViaUI(authedPage, note);
 
         await expect(
             authedPage.getByTestId("toast-error")
@@ -164,7 +165,7 @@ test.describe("Habit detail page", () => {
 
         await expect(
             authedPage.getByPlaceholder("Add a note...")
-        ).toBeVisible();
+        ).toHaveValue(note);
     });
 
 });

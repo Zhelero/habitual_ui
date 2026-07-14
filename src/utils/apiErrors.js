@@ -7,7 +7,7 @@ export function getApiErrorMessage(
     }
 
     if (!error) {
-        return `HTTP ${status}`;
+        return "An unexpected error occurred.";
     }
 
     if (typeof error?.detail === 'string') {
