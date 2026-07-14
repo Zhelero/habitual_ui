@@ -116,14 +116,12 @@ export default function HabitDetailPage() {
                     <Toast
                         type="error"
                         message={actionError}
-                        testId="action-error-message"
                         onClose={() => setActionError("")}
                     />
 
                     <Toast
                         type="success"
                         message={successMessage}
-                        testId="action-success-message"
                         onClose={() => setSuccessMessage("")}
                     />
                 </ToastContainer>
