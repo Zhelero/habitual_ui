@@ -43,7 +43,7 @@ export default function Heatmap({ data }) {
                     return (
                         <div
                             key={day.date}
-                            title={day.note ? `${day.date} - ${day.note}` : day.date}
+                            title={day.note ? `${day.date} — ${day.note}` : day.date}
                             data-testid="heatmap-day"
                             data-state={state}
                             className={`rounded-sm ${STATE_CLASS[state]}`}
