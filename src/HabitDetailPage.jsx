@@ -6,6 +6,7 @@ import { useHabit } from "./hooks/useHabit";
 import { useHabitActions } from "./hooks/useHabitActions.js"
 import { habitColorClass } from "./utils/habitColors";
 import Heatmap from "./components/Heatmap";
+import NotesList from "./components/NotesList.jsx";
 import HabitForm from "./components/HabitForm";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
@@ -224,6 +225,8 @@ export default function HabitDetailPage() {
                     </h2>
                     <Heatmap data={heatmap} />
                 </div>
+
+                <NotesList data={heatmap} />
             </div>
 
             <CompletionNoteDialog
