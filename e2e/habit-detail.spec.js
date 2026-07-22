@@ -244,3 +244,72 @@ test.describe("Habit heatmap", () => {
       await expect(authedPage.getByText("Done + note")).toBeVisible();
   });
 });
+
+test.describe("Notes list", () => {
+    test("new habit shows empty notes state", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Watch a movie");
+
+        await authedPage.getByRole("heading", { name: "Watch a movie" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        await expect(authedPage.getByRole("heading", { name: "Notes" })).toBeVisible();
+        await expect(authedPage.getByText("No notes yet — add one next time you mark this habit done.")).toBeVisible();
+    });
+
+    test("marking a habit done without a note does not add note to list", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Jump");
+
+        await authedPage.getByRole("heading", { name: "Jump" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        await markHabitDoneViaUI(authedPage);
+
+        await expect(authedPage.getByRole("heading", { name: "Notes" })).toBeVisible();
+        await expect(authedPage.getByText("No notes yet — add one next time you mark this habit done.")).toBeVisible();
+    });
+
+    test("marking a habit done with a note adds note to list", async ({
+                                                                                                              authedPage
+                                                                                                          }) => {
+        await createHabitViaUI(authedPage, "Run around");
+
+        await authedPage.getByRole("heading", { name: "Run around" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        const note = "Run 1 km";
+        await markHabitDoneViaUI(authedPage, note);
+
+        const noteItem = authedPage.getByTestId("notes-list-item");
+
+        await expect(noteItem).toContainText(note);
+
+        const expectedDate = new Date().toLocaleDateString("en-US", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        });
+
+        await expect(noteItem).toContainText(expectedDate);
+
+        await expect(authedPage.getByRole("heading", { name: "Notes" })).toBeVisible();
+        await expect(authedPage.getByText("Run 1 km")).toBeVisible();
+    });
+
+    test("undo a habit done with a note removes note from list", async ({
+                                                                          authedPage
+                                                                      }) => {
+        await createHabitViaUI(authedPage, "Go away");
+
+        await authedPage.getByRole("heading", { name: "Go away" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        const note = "Went far away";
+        await markHabitDoneViaUI(authedPage, note);
+
+        await expect(authedPage.getByText("Went far away")).toBeVisible();
+
+        await authedPage.getByRole("button", { name: "Done ✓"}).click();
+        await expect(authedPage.getByText(note)).not.toBeVisible();
+        await expect(authedPage.getByText("No notes yet — add one next time you mark this habit done.")).toBeVisible();
+    });
+});
