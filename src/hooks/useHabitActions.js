@@ -4,9 +4,47 @@ import {useState} from "react";
 
 export function useHabitActions({ fetchAll, setActionError, setSuccessMessage }) {
     const [noteDialogHabit, setNoteDialogHabit] = useState(null);
+    const [noteEditHabit, setNoteEditHabit] = useState(null);
     const [actionLoading, setActionLoading] = useState({});
 
     const closeDialog = () => setNoteDialogHabit(null);
+
+    const openNoteEdit = (habit) => {
+        setActionError("");
+        setNoteEditHabit(habit);
+    };
+
+    const closeNoteEdit = () => setNoteEditHabit(null);
+
+    const submitNoteEdit = async (note) => {
+        setActionError("");
+
+        if (!noteEditHabit) return;
+
+        const habitId = noteEditHabit.id;
+
+        setActionLoading((prev) => ({
+            ...prev,
+            [habitId]: true,
+        }));
+
+        try {
+            await api(`/habits/${habitId}/done/`, {
+                method: "PATCH",
+                body: JSON.stringify({ note }),
+            });
+
+            setNoteEditHabit(null);
+            await fetchAll();
+        } catch (e) {
+            setActionError(e.message);
+        } finally {
+            setActionLoading((prev) => ({
+                ...prev,
+                [habitId]: false,
+            }));
+        }
+    };
 
     const handleMarkDone = (habit) => {
         setActionError("");
@@ -117,5 +155,10 @@ export function useHabitActions({ fetchAll, setActionError, setSuccessMessage })
         actionLoading,
         noteDialogHabit,
         closeDialog,
+
+        noteEditHabit,
+        openNoteEdit,
+        closeNoteEdit,
+        submitNoteEdit,
     }
 }

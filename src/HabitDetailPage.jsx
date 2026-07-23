@@ -9,6 +9,7 @@ import Heatmap from "./components/Heatmap";
 import NotesList from "./components/NotesList.jsx";
 import HabitForm from "./components/HabitForm";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
+import EditNoteDialog from "./components/EditNoteDialog.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
 import ErrorScreen from "./components/ErrorScreen.jsx";
 import ToastContainer from "./components/ToastContainer.jsx";
@@ -78,12 +79,18 @@ export default function HabitDetailPage() {
         actionLoading,
         noteDialogHabit,
         closeDialog,
+
+        noteEditHabit,
+        openNoteEdit,
+        closeNoteEdit,
+        submitNoteEdit,
     } = useHabitActions({ fetchAll: refetch, setActionError, setSuccessMessage });
 
     const today = new Date().toISOString().slice(0, 10);
     const isDoneToday = stats?.last_7_days?.some(
         (d) => d.date === today && d.done
     );
+    const todayNote = heatmap?.find((d) => d.date === today)?.note ?? "";
 
     if (loading) {
         return <LoadingScreen />;
@@ -187,7 +194,7 @@ export default function HabitDetailPage() {
                                             : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
                                     }`}
                                 >
-                                    {actionLoading[id] ? "..." : isDoneToday ? "Done ✓" : "Mark done"}
+                                    {actionLoading[habit.id] ? "..." : isDoneToday ? "Done ✓" : "Mark done"}
                                 </button>
 
                                 <button
@@ -226,7 +233,7 @@ export default function HabitDetailPage() {
                     <Heatmap data={heatmap} />
                 </div>
 
-                <NotesList data={heatmap} />
+                <NotesList data={heatmap} onEditToday={() => openNoteEdit(habit)} />
             </div>
 
             <CompletionNoteDialog
@@ -234,6 +241,14 @@ export default function HabitDetailPage() {
                 habit={noteDialogHabit}
                 onCancel={closeDialog}
                 onSubmit={submitCompletion}
+            />
+
+            <EditNoteDialog
+                key={noteEditHabit ? `${noteEditHabit.id}-edit` : "closed"}
+                habit={noteEditHabit}
+                initialNote={todayNote}
+                onCancel={closeNoteEdit}
+                onSubmit={submitNoteEdit}
             />
         </div>
     );
