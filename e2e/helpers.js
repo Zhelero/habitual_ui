@@ -16,6 +16,7 @@ export async function createHabitViaUI(page, name) {
     await page.getByRole("button", { name: "+ Add habit" }).click();
     await page.getByPlaceholder("Habit name").fill(name);
     await page.getByRole("button", { name: "Create" }).click();
+
     await expect(page.getByRole("heading", { name })).toBeVisible();
 }
 
