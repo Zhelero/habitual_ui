@@ -26,8 +26,13 @@ jobs:
       - name: ESLint
         run: npm run lint
 
+      # Uses better-npm-audit instead of the bare `npm audit` so known
+      # false-positive/no-upstream-fix advisories can be excepted with a
+      # documented reason and expiry date, instead of forcing a downgrade
+      # via `npm audit fix --force` that doesn't actually close the gap.
+      # See .nsprc for the current exceptions and why each one is there.
       - name: Audit dependencies for known vulnerabilities
-        run: npm audit --audit-level=high
+        run: npm run audit
 
   e2e:
     runs-on: ubuntu-latest
