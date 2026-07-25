@@ -24,8 +24,10 @@ export async function createHabitViaUI(page, name) {
 // Pass a note string to save it, or omit it to click "Skip note".
 export async function markHabitDoneViaUI(page, note) {
     await page.getByRole("button", { name: "Mark done" }).click();
+
     if (note) {
         await page.getByPlaceholder("Add a note...").fill(note);
+
         await page.getByRole("button", { name: "Save" }).click();
     } else {
         await page.getByRole("button", { name: "Skip note" }).click();
