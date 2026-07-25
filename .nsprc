@@ -1,0 +1,12 @@
+{
+  "GHSA-qwww-vcr4-c8h2": {
+    "active": true,
+    "notes": "react-router CSRF (follow-up to CVE-2026-22030) only affects Framework Mode / unstable RSC APIs. We use <BrowserRouter> (Declarative Mode) - not affected per the advisory itself. No fix is available forward: react-router-dom hasn't been republished against the patched react-router@8.3.0, and `npm audit fix --force` would only downgrade to 7.11.0, losing several minor releases without closing any real gap for us. Revisit once react-router-dom ships a release depending on react-router@8.x, or if we migrate imports to the `react-router` package directly.",
+    "expiry": "2026-10-25"
+  },
+  "GHSA-mh99-v99m-4gvg": {
+    "active": true,
+    "notes": "brace-expansion DoS reached via eslint-plugin-react's own minimatch@^3.1.2 dependency - unresolved even in the latest eslint-plugin-react release (7.37.5); upstream hasn't bumped it yet. Dev-only tooling that lints our own trusted source tree, never attacker-controlled input, so practical risk is negligible. Revisit once eslint-plugin-react releases a version depending on a patched minimatch.",
+    "expiry": "2026-10-25"
+  }
+}
