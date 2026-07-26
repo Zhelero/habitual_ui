@@ -6,7 +6,7 @@ import { useAuth } from "./hooks/useAuth.js";
 import { useHabits } from "./hooks/useHabits";
 import { useHabitActions } from "./hooks/useHabitActions.js";
 import { sortHabits } from "./utils/sortHabits.js";
-import HabitForm from "./components/HabitForm.jsx";
+import HabitDialog from "./components/HabitDialog.jsx";
 import HabitsList from "./components/HabitsList.jsx";
 import ErrorScreen from "./components/ErrorScreen.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
@@ -231,22 +231,6 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     refreshing={refreshing}
                 />
 
-                {/* Add habit form */}
-                {addingHabit && (
-                    <HabitForm
-                        editingHabit={editingHabit}
-                        newHabitName={newHabitName}
-                        setNewHabitName={setNewHabitName}
-                        newHabitDesc={newHabitDesc}
-                        setNewHabitDesc={setNewHabitDesc}
-                        newHabitColor={newHabitColor}
-                        setNewHabitColor={setNewHabitColor}
-                        onSubmit={handleAddHabit}
-                        onCancel={() => resetHabitForm()}
-                        submitting={submitting}
-                    />
-                )}
-
                 <HabitsList
                     habits={sortedHabits}
                     archiveFilter={archiveFilter}
@@ -257,6 +241,22 @@ export default function HabitualDashboard({ darkMode, setDarkMode }) {
                     onUndo={handleMarkUndo}
                     onEdit={handleEditHabit}
                     onArchive={toggleArchive}
+                />
+
+
+                <HabitDialog
+                    key={addingHabit ? editingHabit ? `${editingHabit.id}-edit` : "create-habit" : "habit-dialog-closed"}
+                    open={addingHabit}
+                    editingHabit={editingHabit}
+                    newHabitName={newHabitName}
+                    setNewHabitName={setNewHabitName}
+                    newHabitDesc={newHabitDesc}
+                    setNewHabitDesc={setNewHabitDesc}
+                    newHabitColor={newHabitColor}
+                    setNewHabitColor={setNewHabitColor}
+                    submitting={submitting}
+                    onSubmit={handleAddHabit}
+                    onCancel={() => resetHabitForm()}
                 />
 
                 <CompletionNoteDialog

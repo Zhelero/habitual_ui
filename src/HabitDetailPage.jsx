@@ -7,13 +7,13 @@ import { useHabitActions } from "./hooks/useHabitActions.js"
 import { habitColorClass } from "./utils/habitColors";
 import Heatmap from "./components/Heatmap";
 import NotesList from "./components/NotesList.jsx";
-import HabitForm from "./components/HabitForm";
 import CompletionNoteDialog from "./components/CompletionNoteDialog.jsx";
 import EditNoteDialog from "./components/EditNoteDialog.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
 import ErrorScreen from "./components/ErrorScreen.jsx";
 import ToastContainer from "./components/ToastContainer.jsx";
 import Toast from "./components/Toast.jsx";
+import HabitDialog from "./components/HabitDialog.jsx";
 
 function StatCard({ label, value }) {
     return (
@@ -135,86 +135,69 @@ export default function HabitDetailPage() {
                 </ToastContainer>
 
                 <div className="rounded-3xl bg-white p-6 shadow-sm dark:bg-slate-800">
-                    {editing ? (
-                        <HabitForm
-                            editingHabit={habit}
-                            newHabitName={name}
-                            setNewHabitName={setName}
-                            newHabitDesc={description}
-                            setNewHabitDesc={setDescription}
-                            newHabitColor={color}
-                            setNewHabitColor={setColor}
-                            onSubmit={handleSave}
-                            onCancel={() => setEditing(false)}
-                            submitting={submitting}
-                        />
-                    ) : (
-                        <>
-                            <div className="flex items-center justify-between gap-2">
-                                <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                                    {habitColorClass(habit.color) && (
-                                        <span
-                                            data-testid="habit-color-dot"
-                                            data-color={habit.color}
-                                            className={`h-3 w-3 rounded-full shrink-0 gap-2 ${habitColorClass(habit.color)}`}
-                                        />
-                                    )}
-                                    {habit.name}
-                                </h1>
-
-                                {habit.is_archived && (
-                                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-700">
-                                        Archived
-                                    </span>
-                                )}
-                            </div>
-
-                            {habit.description && (
-                                <p className="mt-2 text-slate-500 dark:text-slate-400">
-                                    {habit.description}
-                                </p>
+                    <div className="flex items-center justify-between gap-2">
+                        <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                            {habitColorClass(habit.color) && (
+                                <span
+                                    data-testid="habit-color-dot"
+                                    data-color={habit.color}
+                                    className={`h-3 w-3 rounded-full shrink-0 gap-2 ${habitColorClass(habit.color)}`}
+                                />
                             )}
+                            {habit.name}
+                        </h1>
 
-                            <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
-                                Tracking since{" "}
-                                {new Date(habit.created_at).toLocaleDateString("en-US", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                })}
-                            </p>
+                        {habit.is_archived && (
+                            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-700">
+                                Archived
+                            </span>
+                        )}
+                    </div>
 
-                            <div className="mt-6 flex flex-wrap gap-2">
-                                <button
-                                    onClick={() => (isDoneToday ? handleMarkUndo(habit) : handleMarkDone(habit))}
-                                    disabled={actionLoading[habit.id] || habit.is_archived}
-                                    className={`rounded-2xl w-28 text-center py-2 text-sm font-medium transition disabled:opacity-50 ${
-                                        isDoneToday
-                                            ? "bg-emerald-100 text-emerald-700"
-                                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
-                                    }`}
-                                >
-                                    {actionLoading[habit.id] ? "..." : isDoneToday ? "Done ✓" : "Mark done"}
-                                </button>
-
-                                <button
-                                    onClick={startEdit}
-                                    className="rounded-2xl px-4 py-2 text-sm text-slate-500 hover:bg-blue-50 hover:text-blue-500 transition"
-                                >
-                                    Edit
-                                </button>
-
-                                <button
-                                    onClick={() => toggleArchive(habit)}
-                                    data-testid="habit-detail-toggle-archive"
-                                    disabled={actionLoading[id]}
-                                    className="rounded-2xl px-4 py-2 text-sm text-slate-500 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-50"
-                                >
-                                    {habit.is_archived ? "Restore" : "Archive"}
-                                </button>
-                            </div>
-                        </>
+                    {habit.description && (
+                        <p className="mt-2 text-slate-500 dark:text-slate-400">
+                            {habit.description}
+                        </p>
                     )}
+
+                    <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
+                        Tracking since{" "}
+                        {new Date(habit.created_at).toLocaleDateString("en-US", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        })}
+                    </p>
+
+                    <div className="mt-6 flex flex-wrap gap-2">
+                        <button
+                            onClick={() => (isDoneToday ? handleMarkUndo(habit) : handleMarkDone(habit))}
+                            disabled={actionLoading[habit.id] || habit.is_archived}
+                            className={`rounded-2xl w-28 text-center py-2 text-sm font-medium transition disabled:opacity-50 ${
+                                isDoneToday
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+                            }`}
+                        >
+                            {actionLoading[habit.id] ? "..." : isDoneToday ? "Done ✓" : "Mark done"}
+                        </button>
+
+                        <button
+                            onClick={startEdit}
+                            className="rounded-2xl px-4 py-2 text-sm text-slate-500 hover:bg-blue-50 hover:text-blue-500 transition"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            onClick={() => toggleArchive(habit)}
+                            data-testid="habit-detail-toggle-archive"
+                            disabled={actionLoading[id]}
+                            className="rounded-2xl px-4 py-2 text-sm text-slate-500 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-50"
+                        >
+                            {habit.is_archived ? "Restore" : "Archive"}
+                        </button>
+                    </div>
                 </div>
 
                 {stats && (
@@ -237,18 +220,33 @@ export default function HabitDetailPage() {
             </div>
 
             <CompletionNoteDialog
-                key={noteDialogHabit?.id ?? "closed"}
+                key={noteDialogHabit?.id ?? "completion-closed"}
                 habit={noteDialogHabit}
                 onCancel={closeDialog}
                 onSubmit={submitCompletion}
             />
 
             <EditNoteDialog
-                key={noteEditHabit ? `${noteEditHabit.id}-edit` : "closed"}
+                key={noteEditHabit ? `${noteEditHabit.id}-edit` : "edit-closed"}
                 habit={noteEditHabit}
                 initialNote={todayNote}
                 onCancel={closeNoteEdit}
                 onSubmit={submitNoteEdit}
+            />
+
+            <HabitDialog
+                open={editing}
+                key={editing ? `${habit.id}-habit-edit` : "habit-edit-closed"}
+                editingHabit={editing ? habit : null}
+                newHabitName={name}
+                setNewHabitName={setName}
+                newHabitDesc={description}
+                setNewHabitDesc={setDescription}
+                newHabitColor={color}
+                setNewHabitColor={setColor}
+                submitting={submitting}
+                onSubmit={handleSave}
+                onCancel={() => setEditing(false)}
             />
         </div>
     );
