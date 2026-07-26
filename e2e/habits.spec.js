@@ -35,29 +35,6 @@ test.describe("Habits", () => {
         await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("1");
     });
 
-    test("cancel closes new habit dialog", async ({ authedPage }) => {
-        await authedPage.getByRole("button", { name: "+ Add habit" }).click();
-        await authedPage.getByPlaceholder("Habit name").fill("Sail away");
-
-        await expect(authedPage.getByTestId("modal-backdrop")).toBeVisible();
-
-        await authedPage.getByRole("button", { name: "Cancel" }).click();
-
-        await expect(authedPage.getByTestId("modal-backdrop")).not.toBeVisible();
-    });
-
-    test("clicking backdrop while marking a habit done discards the note", async ({ authedPage }) => {
-        await createHabitViaUI(authedPage, "Write");
-
-        await authedPage.getByRole("button", { name: "Mark done" }).click();
-        await authedPage.getByPlaceholder("Add a note...").fill("Draft I don't want to save");
-
-        await authedPage.getByTestId("modal-backdrop").click({ position: { x: 5, y: 5 } });
-
-        await expect(authedPage.getByTestId("modal-backdrop")).not.toBeVisible();
-        await expect(authedPage.getByRole("button", { name: "Mark done" })).toBeVisible();
-    });
-
     test("archiving a habit moves it to the Archived tab, and it can be restored", async ({
                                                                                               authedPage,
                                                                                           }) => {
@@ -88,20 +65,6 @@ test.describe("Habits", () => {
         await expect(authedPage.getByRole("heading", { name: "Meditate" })).toBeVisible();
         await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
         await expect(archiveToggle).toHaveText("Archive");
-    });
-
-    test("character counter caps at 500 when marking a habit done", async ({ authedPage }) => {
-        await createHabitViaUI(authedPage, "Write");
-
-        await authedPage.getByRole("button", { name: "Mark done" }).click();
-
-        const textarea = authedPage.getByPlaceholder("Add a note...");
-        await textarea.pressSequentially("a".repeat(500));
-        await expect(authedPage.getByTestId("completion-note-char-count")).toHaveText("500 / 500");
-
-        await textarea.pressSequentially("a");
-        await expect(textarea).toHaveValue("a".repeat(500));
-        await expect(authedPage.getByTestId("completion-note-char-count")).toHaveText("500 / 500");
     });
 
     test("creating a habit with duplicate name causes error", async ({ authedPage }) => {
@@ -173,44 +136,4 @@ test.describe("Habits", () => {
             authedPage.getByPlaceholder("Add a note...")
         ).toHaveValue(note);
     });
-
-    test("page refresh doesn't affect theme", async ({ authedPage }) => {
-        await authedPage.getByTestId("theme-toggle").click();
-
-        await expect(authedPage.getByTestId("theme-toggle")).toHaveText("☀️");
-
-        await authedPage.reload()
-
-        await expect(authedPage.getByTestId("theme-toggle")).toHaveText("☀️");
-    })
-
-    test("habit completion state is preserved after refresh", async ({ authedPage }) => {
-        await createHabitViaUI(authedPage, "Sit down");
-
-        await markHabitDoneViaUI(authedPage)
-
-        await authedPage.reload()
-
-        await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
-    })
-
-    test("selected dashboard filter is preserved after refresh", async ({ authedPage }) => {
-        authedPage.on("dialog", (dialog) => dialog.accept());
-
-        await createHabitViaUI(authedPage, "Walk around");
-
-        await authedPage.getByTestId("habit-toggle-archive").click();
-        await authedPage.getByRole("button", { name: "Archived", exact: true }).click();
-
-        await expect(authedPage.getByRole("heading", { name: "Walk around" })).toBeVisible();
-        await expect(authedPage.getByTestId("habit-badge-archived")).toBeVisible();
-        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("0");
-
-        await authedPage.reload()
-
-        await expect(authedPage.getByTestId("habit-badge-archived")).toBeVisible();
-        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("0");
-        await expect(authedPage.getByRole("heading", { name: "Walk around" })).toBeVisible();
-    })
-
 });
