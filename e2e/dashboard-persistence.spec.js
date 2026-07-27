@@ -1,8 +1,8 @@
 import { test, expect } from "./fixtures";
 import {createHabitViaUI, markHabitDoneViaUI} from "./helpers.js";
 
-test.describe("", () => {
-    test("page refresh doesn't affect theme", async ({ authedPage }) => {
+test.describe("Dashboard persistence", () => {
+    test("selected theme is preserved after refresh", async ({ authedPage }) => {
         await authedPage.getByTestId("theme-toggle").click();
 
         await expect(authedPage.getByTestId("theme-toggle")).toHaveText("☀️");
@@ -17,9 +17,12 @@ test.describe("", () => {
 
         await markHabitDoneViaUI(authedPage)
 
+        await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("1");
+
         await authedPage.reload()
 
         await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("1");
     })
 
     test("selected dashboard filter is preserved after refresh", async ({ authedPage }) => {

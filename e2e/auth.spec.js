@@ -60,4 +60,18 @@ test.describe("Authentication", () => {
             authedPage.getByTestId("auth-tab-login")
         ).toBeVisible();
     });
+
+    test("registration with an existing email shows an error", async ({page, registeredUser,}) => {
+        await page.goto("/");
+
+        await page.getByTestId("auth-tab-register").click();
+
+        await page.getByPlaceholder("Email").fill(registeredUser.email);
+        await page.getByPlaceholder("Password", { exact: true }).fill(TEST_PASSWORD);
+        await page.getByPlaceholder("Confirm password").fill(TEST_PASSWORD);
+
+        await page.getByTestId("auth-tab-register-button").click();
+
+        await expect(page.getByTestId("auth-errors")).toBeVisible();
+    });
 });

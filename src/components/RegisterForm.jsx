@@ -156,9 +156,11 @@ export default function RegisterForm() {
             />
 
             {errors.length > 0 && (
-                <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3
-                    dark:bg-red-950
-                    dark:border-red-800
+                <div
+                    data-testid="auth-errors"
+                    className="rounded-xl border border-red-300 bg-red-50 px-4 py-3
+                        dark:bg-red-950
+                        dark:border-red-800
                 ">
                     <ul className="list-disc pl-5 text-sm text-red-600 space-y-1">
                         {errors.map((err, index) => (

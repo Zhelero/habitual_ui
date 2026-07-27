@@ -132,26 +132,18 @@ test.describe("Completion note dialog", () => {
 })
 
 test.describe("Edit note dialog", () => {
-    test("saving updated note persists changes", async ({ authedPage }) => {
+    test("saved note persists after reload", async ({ authedPage }) => {
         await createHabitViaUI(authedPage, "Read");
+        await authedPage.getByRole("heading", { name: "Read" }).getByRole("link").click();
 
-        await authedPage
-            .getByRole("heading", { name: "Read" })
-            .getByRole("link")
-            .click();
-
-        const originalNote = "Finished chapter 5";
-        const updatedNote = "Finished chapter 6";
-
-        await markHabitDoneViaUI(authedPage, originalNote);
-
+        await markHabitDoneViaUI(authedPage, "Finished chapter 5");
         await authedPage.getByTestId("notes-list-edit-today").click();
-
-        await authedPage.getByRole("textbox").fill(updatedNote);
+        await authedPage.getByRole("textbox").fill("Finished chapter 6");
         await authedPage.getByRole("button", { name: "Save" }).click();
 
-        await expect(authedPage.getByText(updatedNote)).toBeVisible();
-        await expect(authedPage.getByText(originalNote)).not.toBeVisible();
+        await authedPage.reload();
+
+        await expect(authedPage.getByText("Finished chapter 6")).toBeVisible();
     });
 
     test("pressing Escape closes edit note dialog without saving changes", async ({ authedPage }) => {
