@@ -6,6 +6,23 @@ test.describe("Habits", () => {
         await createHabitViaUI(authedPage, "Read 20 pages");
 
         await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
+        await expect(authedPage.getByRole("heading", { name: "Read 20 pages" })).toBeVisible();
+    });
+
+    test("editing a habit updates its name", async ({ authedPage }) => {
+        const name = "Buy a book";
+        const newName = "Sell it"
+        await createHabitViaUI(authedPage, name);
+
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
+        await expect(authedPage.getByRole("heading", { name })).toBeVisible();
+
+        await authedPage.getByRole("button", {name: "Edit"}).click()
+        await authedPage.getByPlaceholder("Habit name").fill(newName);
+        await authedPage.getByRole("button", { name: "Update" }).click();
+
+        await expect(authedPage.getByText(newName)).toBeVisible();
+        await expect(authedPage.getByText(name)).not.toBeVisible();
     });
 
     test("marking a habit done toggles its state", async ({ authedPage }) => {
@@ -33,11 +50,14 @@ test.describe("Habits", () => {
 
         await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
         await expect(authedPage.getByTestId("dashboard-completed-today-amount")).toHaveText("1");
+
+        await authedPage.getByRole("heading", { name: "Journal" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        await expect(authedPage.getByText(note)).toBeVisible();
     });
 
-    test("archiving a habit moves it to the Archived tab, and it can be restored", async ({
-                                                                                              authedPage,
-                                                                                          }) => {
+    test("archiving a habit moves it to the Archived tab, and it can be restored", async ({authedPage,}) => {
         authedPage.on("dialog", (dialog) => dialog.accept());
 
         await createHabitViaUI(authedPage, "Meditate");
@@ -67,13 +87,49 @@ test.describe("Habits", () => {
         await expect(archiveToggle).toHaveText("Archive");
     });
 
-    test("creating a habit with duplicate name causes error", async ({ authedPage }) => {
+    test("archived habit cannot be marked done", async ({ authedPage }) => {
+        authedPage.on("dialog", (dialog) => dialog.accept());
+
+        await createHabitViaUI(authedPage, "Think about it");
+
+        const archiveToggle = authedPage.getByTestId("habit-toggle-archive");
+
+        await expect(archiveToggle).toHaveText("Archive");
+        await archiveToggle.click();
+
+        await expect(authedPage.getByText("No habits yet. Add your first one.")).toBeVisible();
+        await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("0");
+
+        await authedPage.getByRole("button", { name: "Archived", exact: true }).click();
+
+        await expect(authedPage.getByRole("heading", { name: "Think about it" })).toBeVisible();
+        await expect(authedPage.getByRole("button", { name: "Mark done" })).toBeDisabled();
+    });
+
+    test("creating a habit with duplicate name shows an error", async ({ authedPage }) => {
         await createHabitViaUI(authedPage, "Some action");
         await createHabitViaUI(authedPage, "Some action");
 
         await expect(authedPage.getByTestId("toast-error")).toHaveText("Habit already exists");
         await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
-    })
+    });
+
+    test("cannot create a habit with an empty and whitespaces only name", async ({ authedPage }) => {
+        await authedPage.getByRole("button", { name: "+ Add habit" }).click();
+
+        const createButton = authedPage.getByRole("button", { name: "Create" });
+        const habitNameInput = authedPage.getByPlaceholder("Habit name");
+
+        await expect(createButton).toBeDisabled();
+
+        await habitNameInput.fill("      ");
+
+        await expect(createButton).toBeDisabled();
+
+        await habitNameInput.fill("Read a book");
+
+        await expect(createButton).toBeEnabled();
+    });
 
     test("API validation errors are shown to the user", async ({ authedPage }) => {
 

@@ -2,9 +2,7 @@ import { test, expect } from "./fixtures";
 import {createHabitViaUI, markHabitDoneViaUI } from "./helpers.js";
 
 test.describe("Habit detail page", () => {
-    test("navigating from the dashboard shows stats and a back link", async ({
-                                                                                 authedPage,
-                                                                             }) => {
+    test("navigating from the dashboard shows stats and a back link", async ({authedPage,}) => {
         await createHabitViaUI(authedPage, "Stretch");
 
         await authedPage.getByRole("heading", { name: "Stretch" }).getByRole("link").click();
@@ -22,9 +20,7 @@ test.describe("Habit detail page", () => {
         await expect(authedPage).toHaveURL("/");
     });
 
-    test("editing a habit's name from the detail page updates it everywhere", async ({
-                                                                                         authedPage,
-                                                                                     }) => {
+    test("editing a habit's name from the detail page updates it everywhere", async ({authedPage,}) => {
         await createHabitViaUI(authedPage, "Old name");
 
         await authedPage.getByRole("heading", { name: "Old name" }).getByRole("link").click();
@@ -40,9 +36,7 @@ test.describe("Habit detail page", () => {
         await expect(authedPage.getByRole("heading", { name: "New name" })).toBeVisible();
     });
 
-    test("marking a habit done from the detail page is reflected immediately", async ({
-                                                                                          authedPage,
-                                                                                      }) => {
+    test("marking a habit done from the detail page is reflected immediately", async ({authedPage,}) => {
         await createHabitViaUI(authedPage, "Journal");
 
         await authedPage.getByRole("heading", { name: "Journal" }).getByRole("link").click();
@@ -50,23 +44,57 @@ test.describe("Habit detail page", () => {
 
         await markHabitDoneViaUI(authedPage)
         await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+        await expect(authedPage.getByText("No note yet.")).toBeVisible();
     });
 
-    test("marking a habit done with a note from the detail page completes the flow", async ({
-                                                                                                authedPage
-    }) => {
+    test("marking a habit done with a note from the detail page completes the flow", async ({authedPage}) => {
         await createHabitViaUI(authedPage, "Read");
 
         await authedPage.getByRole("heading", { name: "Read" }).getByRole("link").click();
         await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
 
         await markHabitDoneViaUI(authedPage, "Felt great today");
+
         await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+        await expect(authedPage.getByText("Felt great today")).toBeVisible();
     });
 
-    test("archiving a habit from detail page affects dashboard", async ({
-                                                                        authedPage,
-                                                                    }) => {
+    test("clearing a habit note removes it", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Read");
+
+        await authedPage.getByRole("heading", { name: "Read" }).getByRole("link").click();
+
+        const note = "Finished chapter 5";
+        await markHabitDoneViaUI(authedPage, note);
+
+        await authedPage.getByTestId("notes-list-edit-today").click();
+
+        await expect(authedPage.getByRole("heading", { name: "Edit today's note" })).toBeVisible();
+
+        await authedPage.getByRole("textbox").fill("");
+        await authedPage.getByRole("button", { name: "Save" }).click();
+
+        await expect(authedPage.getByText(note)).not.toBeVisible();
+        await expect(authedPage.getByText("No note yet.")).toBeVisible();
+    });
+
+    test("marking a habit done and undoing it from the detail page toggles its state", async ({authedPage,}) => {
+        await createHabitViaUI(authedPage, "Journal");
+
+        await authedPage.getByRole("heading", { name: "Journal" }).getByRole("link").click();
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        await markHabitDoneViaUI(authedPage);
+
+        await expect(authedPage.getByRole("button", { name: "Done ✓" })).toBeVisible();
+
+        await authedPage.getByRole("button", { name: "Done ✓" }).click();
+
+        await expect(authedPage.getByRole("button", { name: "Mark done" })).toBeVisible();
+
+    });
+
+    test("archiving a habit from detail page affects dashboard", async ({authedPage,}) => {
         authedPage.on("dialog", (dialog) => dialog.accept());
 
         await createHabitViaUI(authedPage, "Stretch");
@@ -87,9 +115,7 @@ test.describe("Habit detail page", () => {
         await expect(authedPage.getByText("No habits yet. Add your first one.")).toBeVisible();
     })
 
-    test("API validation errors are shown when editing a habit fails", async ({
-                                                                                  authedPage,
-                                                                              }) => {
+    test("API validation errors are shown when editing a habit fails", async ({authedPage,}) => {
         await createHabitViaUI(authedPage, "Old name");
 
         await authedPage.getByRole("heading", { name: "Old name" }).getByRole("link").click();
@@ -129,9 +155,7 @@ test.describe("Habit detail page", () => {
         ).toHaveValue("New name");
     });
 
-    test("validation errors are shown when marking a habit done fails from the detail page", async ({
-                                                                                                        authedPage,
-                                                                                                    }) => {
+    test("validation errors are shown when marking a habit done fails from the detail page", async ({authedPage,}) => {
         await createHabitViaUI(authedPage, "Journal");
 
         await authedPage.getByRole("heading", { name: "Journal" }).getByRole("link").click();

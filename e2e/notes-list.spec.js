@@ -151,4 +151,21 @@ test.describe("Notes list", () => {
         await expect(authedPage.getByText(note)).not.toBeVisible();
         await expect(authedPage.getByText("No notes yet — add one next time you mark this habit done.")).toBeVisible();
     });
+
+    test("note is preserved after page refresh", async ({ authedPage }) => {
+        await createHabitViaUI(authedPage, "Read");
+
+        await authedPage.getByRole("heading", { name: "Read" }).getByRole("link").click();
+
+        await expect(authedPage).toHaveURL(/\/habits\/\d+$/);
+
+        const note = "Finished chapter 3";
+        await markHabitDoneViaUI(authedPage, note);
+
+        await expect(authedPage.getByText(note)).toBeVisible();
+
+        await authedPage.reload();
+
+        await expect(authedPage.getByText(note)).toBeVisible();
+    });
 });
