@@ -4,16 +4,20 @@
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss)
 ![React Router](https://img.shields.io/badge/React_Router-7-CA4245?style=flat-square&logo=reactrouter)
-![Tests](https://img.shields.io/badge/e2e_tests-21%20passed-brightgreen?style=flat-square&logo=playwright)
+![Tests](https://img.shields.io/badge/e2e_tests-58%20passed-brightgreen?style=flat-square&logo=playwright)
 ![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3?style=flat-square&logo=eslint)
 ![CI](https://github.com/Zhelero/habitual_ui/actions/workflows/ci.yml/badge.svg)
 
 ---
 
 ## Screenshots
-
+#### Login
 ![Login](./src/assets/screenshot-login.png)
+#### Dashboard
 ![Dashboard](./src/assets/screenshot-dashboard.png)
+#### Habit completion dialog
+![Dashboard-completion-dialog](./src/assets/screenshot-dashboard-completion-dialog.png)
+#### Habit page
 ![Habit](./src/assets/screenshot-habit-page.png)
 
 ---
@@ -28,12 +32,16 @@
 - 7-day activity strip on each dashboard habit card
 - Filter habits by Active / Archived / All, with a dedicated empty state per filter
 - Sort by pending, completed, streak, or alphabetically
-- Mark habits as done / undo
+- Mark habits as done / undo, with an optional note attached to today's completion
+- Edit today's note at any time; past days are read-only
+- Notes list on the habit detail page (newest first, today always shown when done)
+- Shared `Modal` component behind every dialog (create/edit habit, mark-done note, edit note) — closable via Escape or a click on the backdrop, with a live `x / 500` character counter on note inputs
 - Dedicated habit detail page (`/habits/:id`) with full stats and a full-size 30-day heatmap
+- Three-state heatmap (no activity / done / done + note) with a legend and a tooltip showing the note on hover
 - Persisted dark mode, applied consistently across every route
 - Filter and sort selection persisted in the URL (shareable, survives refresh, cleared on logout)
-- Auto-dismissing success messages
-- End-to-end test suite (Playwright) covering auth, habit CRUD, detail page, and color selection
+- Toast notifications for success and API validation errors (success toasts auto-dismiss, errors stay until closed)
+- End-to-end test suite (Playwright, 59 tests) covering auth, habit CRUD, dialogs, notes, heatmap, color selection, and dashboard persistence
 - CI pipeline (GitHub Actions): lint, then E2E tests run against a real backend + PostgreSQL, checked out and started inside the same workflow
 
 ---
@@ -70,17 +78,43 @@ src/
 
 ├── components/
 
-│   ├── HabitCard.jsx        # habit row on the dashboard list
+│   ├── HabitCard.jsx           # habit row on the dashboard list
 
-│   ├── HabitForm.jsx        # create / edit form
+│   ├── HabitsList.jsx          # renders the filtered/sorted list of HabitCards
 
-│   ├── Heatmap.jsx          # 30-day activity heatmap
+│   ├── HabitForm.jsx           # create / edit fields, shared by the dialog and embedded contexts
 
-│   ├── ThemeToggle.jsx      # dark mode switch
+│   ├── HabitDialog.jsx         # create/edit habit dialog (wraps HabitForm in Modal)
 
-│   ├── LoginForm.jsx        # login form
+│   ├── CompletionNoteDialog.jsx # optional note dialog shown when marking a habit done
 
-│   └── RegisterForm.jsx     # registration form
+│   ├── EditNoteDialog.jsx      # edit today's note dialog
+
+│   ├── NotesList.jsx           # notes list on the habit detail page
+
+│   ├── Modal.jsx               # shared dialog shell — Escape/backdrop-click to close
+
+│   ├── Heatmap.jsx             # 30-day activity heatmap (none / done / done+note)
+
+│   ├── DashboardHeader.jsx     # dashboard title + add-habit entry point
+
+│   ├── DashboardStats.jsx      # total / completed-today / best-streak summary
+
+│   ├── DashboardToolbar.jsx    # filter (Active/Archived/All) and sort controls
+
+│   ├── Toast.jsx               # single toast (success auto-dismisses, error persists)
+
+│   ├── ToastContainer.jsx      # toast stacking/positioning
+
+│   ├── ThemeToggle.jsx         # dark mode switch
+
+│   ├── LoadingScreen.jsx       # route-level loading state
+
+│   ├── ErrorScreen.jsx         # route-level error state
+
+│   ├── LoginForm.jsx           # login form
+
+│   └── RegisterForm.jsx        # registration form
 
 ├── context/
 
@@ -94,11 +128,15 @@ src/
 
 │   ├── useHabits.js         # list + stats fetching for the dashboard
 
-│   └── useHabit.js          # single habit + stats + heatmap for the detail page
+│   ├── useHabit.js          # single habit + stats + heatmap for the detail page
+
+│   └── useHabitActions.js   # create/edit/archive/mark-done/note mutations shared by dashboard and detail page
 
 ├── utils/
 
 │   ├── sortHabits.js
+
+│   ├── apiErrors.js         # getApiErrorMessage — formats API validation errors for toasts
 
 │   └── habitColors.js       # HABIT_COLORS palette + habitColorClass helper
 
@@ -106,7 +144,7 @@ src/
 
 ├── HabitualDashboard.jsx      # dashboard: list, filters, sorting
 
-├── HabitDetailPage.jsx        # /habits/:id — full stats, heatmap, edit/archive
+├── HabitDetailPage.jsx        # /habits/:id — full stats, heatmap, notes, edit/archive
 
 ├── api.js                     # API client with auth headers
 
@@ -114,21 +152,29 @@ src/
 
 └── main.jsx                   # React Router + AuthProvider setup
 
-e2e/                          # Playwright end-to-end tests
+e2e/                          # Playwright end-to-end tests (59 tests)
 
-├── auth.spec.js               # login / registration / token refresh
+├── auth.spec.js                 # login / registration / token refresh
 
-├── habits.spec.js             # habit CRUD, filters, sorting
+├── habits.spec.js               # habit CRUD, editing, archiving, validation
 
-├── habit-detail.spec.js       # detail page stats, edit, archive
+├── habit-detail.spec.js         # detail page navigation, stats, edit, archive
 
-├── habit-color.spec.js        # color picker and color persistence
+├── habit-heatmap.spec.js        # heatmap cell states and legend
 
-├── fixtures.js                 # authedPage / registeredUser fixtures
+├── notes-list.spec.js           # notes list rendering, editing, persistence
 
-├── helpers.js                  # shared test helpers (createHabitViaUI, uniqueEmail)
+├── modal.spec.js                # dialog behavior (Escape/backdrop/Cancel, char counter) across all dialogs
 
-└── global-setup.js             # test environment bootstrap
+├── dashboard-persistence.spec.js # theme, completion state, and filter surviving reload
+
+├── habit-color.spec.js          # color picker and color persistence
+
+├── fixtures.js                   # authedPage / registeredUser fixtures
+
+├── helpers.js                    # shared test helpers (createHabitViaUI, markHabitDoneViaUI, uniqueEmail)
+
+└── global-setup.js               # test environment bootstrap
 
 .github/workflows/
 
