@@ -67,6 +67,10 @@ test.describe("Habit detail page", () => {
         const note = "Finished chapter 5";
         await markHabitDoneViaUI(authedPage, note);
 
+        await expect(
+            authedPage.getByText(note)
+        ).toBeVisible({ timeout: 10000 });
+
         await authedPage.getByTestId("notes-list-edit-today").click();
 
         await expect(authedPage.getByRole("heading", { name: "Edit today's note" })).toBeVisible();
@@ -181,7 +185,10 @@ test.describe("Habit detail page", () => {
         });
 
         const note = "Draw a picture"
-        await markHabitDoneViaUI(authedPage, note);
+
+        await authedPage.getByRole("button", { name: "Mark done" }).click();
+        await authedPage.getByPlaceholder("Add a note...").fill(note);
+        await authedPage.getByRole("button", { name: "Save" }).click();
 
         await expect(
             authedPage.getByTestId("toast-error")

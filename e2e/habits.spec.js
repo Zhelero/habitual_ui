@@ -108,9 +108,13 @@ test.describe("Habits", () => {
 
     test("creating a habit with duplicate name shows an error", async ({ authedPage }) => {
         await createHabitViaUI(authedPage, "Some action");
-        await createHabitViaUI(authedPage, "Some action");
+
+        await authedPage.getByRole("button", { name: "+ Add habit" }).click();
+        await authedPage.getByPlaceholder("Habit name").fill("Some action");
+        await authedPage.getByRole("button", { name: "Create" }).click();
 
         await expect(authedPage.getByTestId("toast-error")).toHaveText("Habit already exists");
+        await expect(authedPage.getByTestId("modal-backdrop")).toBeVisible();
         await expect(authedPage.getByTestId("dashboard-total-habits-amount")).toHaveText("1");
     });
 
@@ -180,7 +184,10 @@ test.describe("Habits", () => {
         });
 
         const note = "Write some notes"
-        await markHabitDoneViaUI(authedPage, note);
+
+        await authedPage.getByRole("button", { name: "Mark done" }).click();
+        await authedPage.getByPlaceholder("Add a note...").fill(note);
+        await authedPage.getByRole("button", { name: "Save" }).click();
 
         await expect(
             authedPage.getByTestId("toast-error")

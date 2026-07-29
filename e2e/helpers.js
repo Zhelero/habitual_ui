@@ -15,9 +15,19 @@ export function uniqueEmail() {
 export async function createHabitViaUI(page, name) {
     await page.getByRole("button", { name: "+ Add habit" }).click();
     await page.getByPlaceholder("Habit name").fill(name);
-    await page.getByRole("button", { name: "Create" }).click();
 
-    await expect(page.getByRole("heading", { name })).toBeVisible();
+    await Promise.all([
+        page.waitForResponse(
+            (r) =>
+                r.url().includes("/habits/") &&
+                r.request().method() === "POST"
+        ),
+        page.getByRole("button", { name: "Create" }).click(),
+    ]);
+
+    await expect(page.getByTestId("modal-backdrop")).not.toBeVisible();
+
+    await expect(page.getByRole("link", { name })).toBeVisible({ timeout: 10000 });
 }
 
 // Clicks "Mark done" and completes the note dialog that appears after it.
@@ -32,4 +42,6 @@ export async function markHabitDoneViaUI(page, note) {
     } else {
         await page.getByRole("button", { name: "Skip note" }).click();
     }
+
+    await expect(page.getByTestId("modal-backdrop")).not.toBeVisible();
 }

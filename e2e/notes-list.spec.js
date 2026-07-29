@@ -52,9 +52,7 @@ test.describe("Notes list", () => {
         await expect(authedPage.locator("textarea")).toHaveAttribute("placeholder", "Add a note...");
     });
 
-    test("marking a habit done with a note adds note to list", async ({
-                                                                          authedPage
-                                                                      }) => {
+    test("marking a habit done with a note adds note to list", async ({authedPage}) => {
         await createHabitViaUI(authedPage, "Run around");
 
         await authedPage.getByRole("heading", { name: "Run around" }).getByRole("link").click();
@@ -134,9 +132,7 @@ test.describe("Notes list", () => {
         await expect(authedPage.getByRole("heading", { name: "Edit today's note" })).not.toBeVisible();
     });
 
-    test("undo a habit done with a note removes note from list", async ({
-                                                                            authedPage
-                                                                        }) => {
+    test("undo a habit done with a note removes note from list", async ({authedPage}) => {
         await createHabitViaUI(authedPage, "Go away");
 
         await authedPage.getByRole("heading", { name: "Go away" }).getByRole("link").click();
